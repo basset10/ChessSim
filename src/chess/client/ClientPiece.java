@@ -49,7 +49,7 @@ public class ClientPiece {
 
 	public ArrayList<HvlCoord> getAllValidMoves(ClientBoard boardArg, ClientPlayer player) {
 		ArrayList<HvlCoord> moves = new ArrayList<HvlCoord>();
-		moves = ClientPieceLogic.getAllValidMoves(this, boardArg, player);
+		moves = ClientPieceLogic.getAllValidMoves(this, boardArg, player, true);
 		return moves;
 	}
 

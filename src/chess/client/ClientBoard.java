@@ -19,7 +19,25 @@ public class ClientBoard {
 	//ArrayList containing all pieces no longer in play.
 	public ArrayList<ClientPiece> claimedPieces = new ArrayList<ClientPiece>();
 
+	
 
+	public ClientBoard(ArrayList<ClientPiece> activePiecesArg) {
+		activePieces = activePiecesArg;
+		board = new ArrayList<ArrayList<ClientBoardSpace>>();	
+
+		boolean blackFlag = true;
+		for(int i = 0; i < 8; i++) {
+			board.add(new ArrayList<ClientBoardSpace>());			
+			for(int j = 0; j < 8; j++) {
+				if(blackFlag) {
+					board.get(i).add(new ClientBoardSpace(j, i, Color.black));
+				}else {
+					board.get(i).add(new ClientBoardSpace(j, i, Color.white));
+				}
+				if(j != 7) blackFlag = !blackFlag;
+			}
+		}
+	}
 
 
 	public ClientBoard(ClientPlayer player) {
@@ -40,7 +58,7 @@ public class ClientBoard {
 				boolean free = true;
 
 				for(int k = 0; k < activePieces.size(); k++) {
-					if(activePieces.get(k).xPos == i && activePieces.get(k).yPos == j) {
+					if(activePieces.get(k).xPos == j && activePieces.get(k).yPos == i) {
 						System.out.print("[" + activePieces.get(k).type + "]");
 						free = false;
 					}					
@@ -113,6 +131,22 @@ public class ClientBoard {
 		activePieces.add(new ClientPiece(PieceType.knight, PieceColor.white, 6, 7));
 		activePieces.add(new ClientPiece(PieceType.rook, PieceColor.white, 7, 7));
 	}
+	
+	public boolean multiplePiecesOnThisSquare(int x, int y) {
+		int count = 0;
+		for(ClientPiece p :activePieces) {
+			if(p.xPos == x && p.yPos == y) {
+				count++;
+			}
+		}
+		
+		if(count > 1) {
+			return true;
+		}else {
+			return false;
+		}
+		
+	}
 
 	public boolean isSpaceFree(int xArg, int yArg) {
 		for(int i = 0; i < activePieces.size(); i++) {
@@ -124,10 +158,10 @@ public class ClientBoard {
 	}
 
 	public ClientPiece getPieceAt(int xArg, int yArg){
-		for(int i = 0; i < activePieces.size(); i++) {
-			if(activePieces.get(i).xPos == xArg && activePieces.get(i).yPos == yArg) {
+		for(int i = 0; i < this.activePieces.size(); i++) {
+			if(this.activePieces.get(i).xPos == xArg && activePieces.get(i).yPos == yArg) {
 				try {
-					return activePieces.get(i);
+					return this.activePieces.get(i);
 				}catch(NullPointerException e) {
 					System.out.println("ERROR! Cannot locate piece at " + xArg + ", " + yArg);
 				}				

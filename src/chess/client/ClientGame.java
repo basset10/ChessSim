@@ -20,6 +20,8 @@ import com.osreboot.ridhvl2.loader.HvlLoaderFont;
 import com.osreboot.ridhvl2.menu.HvlFont;
 
 import chess.client.ClientMenuManager.MenuState;
+import chess.client.ClientPiece.PieceColor;
+import chess.client.ClientPiece.PieceType;
 import chess.client.ClientPlayer.PlayerColor;
 import chess.common.NetworkUtil;
 import chess.common.Util;
@@ -52,6 +54,8 @@ public class ClientGame {
 	private boolean normalInput = true;
 	private boolean playersTurn = false;
 	public GameState state = GameState.menu;
+	public boolean inCheck = false;
+	public boolean checkmate = false;
 
 	public ClientGame(String id) {
 		sampleplayer = new SamplePlayerClient();
@@ -86,6 +90,8 @@ public class ClientGame {
 		normalInput = true;
 		playersTurn = false;
 		state = GameState.menu;
+		inCheck = false;
+		checkmate = false;
 	}
 
 	public void update(float delta){
@@ -160,6 +166,10 @@ public class ClientGame {
 				board.update(delta, player);
 				sampleplayer.update();
 				drawValidMoves();
+				
+				if(inCheck) {
+					//System.out.println("YOU'RE IN CHECK");
+				}
 
 				//Receive and handle opponent's move from the server.
 				if(HvlDirect.getKeys().contains(NetworkUtil.KEY_SERVER_MOVE_RESPONSE)) {
@@ -186,6 +196,8 @@ public class ClientGame {
 								}						
 								p.xPos = movePacket.packet.intendedMoveX;
 								p.yPos = movePacket.packet.intendedMoveY;
+								inCheck = ClientPieceLogic.getCheckState(board, player);
+								checkmate = ClientPieceLogic.getCheckmateState(board, player, inCheck);
 								escape = true;
 								playersTurn = true;
 							}					
