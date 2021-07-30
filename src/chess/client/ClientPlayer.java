@@ -2,7 +2,7 @@ package chess.client;
 
 public class ClientPlayer {
 	
-	enum PlayerColor{
+	public enum PlayerColor{
 		none,
 		white,
 		black;

@@ -9,6 +9,7 @@ public class PacketClientMove implements Serializable{
 	public int existingPieceY;	
 	public int intendedMoveX;
 	public int intendedMoveY;
+	public boolean castled;
 	
 	public String id;
 	

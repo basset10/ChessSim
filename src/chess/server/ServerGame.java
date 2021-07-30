@@ -8,6 +8,7 @@ import com.osreboot.hvol2.base.anarchy.HvlIdentityAnarchy;
 import com.osreboot.hvol2.direct.HvlDirect;
 
 import chess.common.NetworkUtil;
+import chess.common.packet.PacketClientGameOver;
 import chess.common.packet.PacketClientGameReady;
 import chess.common.packet.PacketClientMove;
 import chess.common.packet.PacketServerGameReadyResponse;
@@ -20,14 +21,15 @@ public class ServerGame {
 
 	static final int PLAYER_WHITE = 0;
 	static final int PLAYER_BLACK = 1;
-	
+
 	private Random rd = new Random();
 	private boolean colorTrack;
 	private boolean secondColor = false;
-	
+
 	public static int playerTurn = PLAYER_WHITE;
-	
+
 	private static boolean boardInitialized = false;
+	private static boolean gameOver = false;
 
 	public void update() {
 
@@ -39,6 +41,15 @@ public class ServerGame {
 
 		//Collect all player status packets and create CollectivePlayerStatus packet.
 		for(HvlIdentityAnarchy i : HvlDirect.<HvlIdentityAnarchy>getConnections()) {
+
+			if(HvlDirect.getKeys(i).contains(NetworkUtil.KEY_CLIENT_GAME_OVER)) {				
+				PacketClientGameOver packet = HvlDirect.getValue(i, NetworkUtil.KEY_CLIENT_GAME_OVER);
+				((HvlAgentServerAnarchy)HvlDirect.getAgent()).getTable(i).remove(NetworkUtil.KEY_CLIENT_GAME_OVER);
+				System.out.println("Game is over!");	
+				for(HvlIdentityAnarchy j : HvlDirect.<HvlIdentityAnarchy>getConnections()) {
+					HvlDirect.writeTCP(j, NetworkUtil.KEY_SERVER_GAME_OVER_RESPONSE, packet);
+				}
+			}
 			if(HvlDirect.getKeys(i).contains(NetworkUtil.KEY_PLAYER_STATUS)) {
 				//System.out.println("PACKET RECEIVED!!!");
 				collectivePlayerStatus.put(i.getName(), HvlDirect.getValue(i, NetworkUtil.KEY_PLAYER_STATUS));
@@ -88,11 +99,10 @@ public class ServerGame {
 					reset();
 				}
 			}
-			
 		}
 
 	}
-	
+
 	public void reset() {
 		boardInitialized = false;
 		secondColor = false;

@@ -15,6 +15,8 @@ import chess.client.ClientPlayer.PlayerColor;
 public class ClientPiece {
 
 	public static final int PIECE_SIZE = 50;
+	//Used to check castling legality
+	public boolean moved = false;
 
 	//Need to check for all possible valid moves, per piece. Store these moves in an arraylist somehow.
 	//First just get valid moves working regardless of player order or turn
@@ -47,8 +49,8 @@ public class ClientPiece {
 
 	public ClientPiece() {}
 
-	public ArrayList<HvlCoord> getAllValidMoves(ClientBoard boardArg, ClientPlayer player) {
-		ArrayList<HvlCoord> moves = new ArrayList<HvlCoord>();
+	public ArrayList<ClientMove> getAllValidMoves(ClientBoard boardArg, ClientPlayer player) {
+		ArrayList<ClientMove> moves = new ArrayList<ClientMove>();
 		moves = ClientPieceLogic.getAllValidMoves(this, boardArg, player, true);
 		return moves;
 	}

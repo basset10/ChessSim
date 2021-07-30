@@ -20,5 +20,7 @@ public class NetworkUtil {
 	public static final String KEY_COLLECTIVE_CLIENT_GAME_READY = "game.collectiveclientgameready";
 	public static final String KEY_CLIENT_MOVE = "game.clientmove";
 	public static final String KEY_SERVER_MOVE_RESPONSE = "game.servermoveresponse";
+	public static final String KEY_CLIENT_GAME_OVER = "game.clientgameover";
+	public static final String KEY_SERVER_GAME_OVER_RESPONSE = "game.servergameoverresponse";
 	
 }

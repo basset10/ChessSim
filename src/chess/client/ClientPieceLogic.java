@@ -12,25 +12,14 @@ public class ClientPieceLogic{
 
 	//Used to determine if an attempted move will put the user in self-check.
 	public static boolean legalMoveCheck(int intendedX, int intendedY, ClientPiece selectedPiece, ClientBoard boardArg, ClientPlayer playerArg) {
-
 		System.out.println("Verifying legality of move " + selectedPiece.color + " " + selectedPiece.type + " to space " + intendedX + ", " + intendedY);
-
 		//Temporary board to simulate attempted move
 		ArrayList<ClientPiece> piecesCopy = new ArrayList<ClientPiece>();
 
 		for(ClientPiece p : boardArg.activePieces) {
 			piecesCopy.add(new ClientPiece(p.type, p.color, p.xPos, p.yPos));
 		}
-
 		ClientBoard sim = new ClientBoard(piecesCopy);
-		//System.out.println("========REAL BOARD============");
-		//boardArg.print();
-		//System.out.println("=========SIM BOARD============");
-
-
-		//Move the selected piece to the intended space on the sim board and get the check state
-		//sim.getPieceAt(selectedPiece.xPos, selectedPiece.yPos).xPos = intendedX;
-		//sim.getPieceAt(selectedPiece.xPos, selectedPiece.yPos).yPos = intendedY;
 		for(int i = 0; i < sim.activePieces.size(); i++) {
 			if(sim.activePieces.get(i).xPos == intendedX && sim.activePieces.get(i).yPos == intendedY) {
 				sim.activePieces.remove(i);
@@ -44,11 +33,6 @@ public class ClientPieceLogic{
 				break;
 			}
 		}
-
-
-
-		//sim.print();
-
 		if(getCheckState(sim, playerArg)) {
 			return false;
 		}else {
@@ -56,43 +40,68 @@ public class ClientPieceLogic{
 		}
 	}
 
-	//should also check for stalemate...
-	public static boolean getCheckmateState(ClientBoard board, ClientPlayer player, boolean checkStateArg) {
+	public static int getGameEndState(ClientBoard board, ClientPlayer player, boolean checkStateArg) {
 		if(checkStateArg) {
 			if(player.color == PlayerColor.white) {
 				for(ClientPiece piece : board.activePieces) {
 					if(piece.color == PieceColor.white) {						
-						ArrayList<HvlCoord> moveHolder = piece.getAllValidMoves(board, player);
+						ArrayList<ClientMove> moveHolder = piece.getAllValidMoves(board, player);
 						if(moveHolder.size() > 0) {
-							return false;
+							return ClientGame.GAME_END_STATE_CONTINUE;
 						}
 					}
 				}
-				return true;
+				return ClientGame.GAME_END_STATE_CHECKMATE;
 			}
 			else if(player.color == PlayerColor.black) {
 				for(ClientPiece piece : board.activePieces) {
 					if(piece.color == PieceColor.black) {
-						ArrayList<HvlCoord> moveHolder = piece.getAllValidMoves(board, player);
+						ArrayList<ClientMove> moveHolder = piece.getAllValidMoves(board, player);
 						if(moveHolder.size() > 0) {
-							return false;
+							return ClientGame.GAME_END_STATE_CONTINUE;
 						}
 					}
 				}
-				return true;
+				return ClientGame.GAME_END_STATE_CHECKMATE;
 			}else {
-				return false;
+				return ClientGame.GAME_END_STATE_CONTINUE;
+			}
+		}else {
+			if(player.color == PlayerColor.white) {
+				for(ClientPiece piece : board.activePieces) {
+					if(piece.color == PieceColor.white) {						
+						ArrayList<ClientMove> moveHolder = piece.getAllValidMoves(board, player);
+						if(moveHolder.size() > 0) {
+							return ClientGame.GAME_END_STATE_CONTINUE;
+						}
+					}
+				}
+				return ClientGame.GAME_END_STATE_STALEMATE;
+			}
+			else if(player.color == PlayerColor.black) {
+				for(ClientPiece piece : board.activePieces) {
+					if(piece.color == PieceColor.black) {
+						ArrayList<ClientMove> moveHolder = piece.getAllValidMoves(board, player);
+						if(moveHolder.size() > 0) {
+							return ClientGame.GAME_END_STATE_CONTINUE;
+						}
+					}
+				}
+				return ClientGame.GAME_END_STATE_STALEMATE;
+			}else {
+				return ClientGame.GAME_END_STATE_CONTINUE;
 			}
 		}
-		return false;
 	}
+
+
 
 	public static boolean getCheckState(ClientBoard board, ClientPlayer player) {
 		if(player.color == PlayerColor.white) {
 			for(ClientPiece piece : board.activePieces) {
 				if(piece.color == PieceColor.black) {
 					//System.out.println("Checking " + piece.color + " " + piece.type + " for check...");
-					for(HvlCoord c : getAllValidMoves(piece, board, player, false)){				
+					for(ClientMove c : getAllValidMoves(piece, board, player, false)){				
 						for(ClientPiece cp : board.activePieces) {
 							if(cp.color == PieceColor.white && cp.type == PieceType.king && cp.xPos == (int)c.x && cp.yPos == (int)c.y) {
 								//Check if this square can be safely captured...
@@ -111,7 +120,7 @@ public class ClientPieceLogic{
 			for(ClientPiece piece : board.activePieces) {
 				if(piece.color == PieceColor.white) {
 					//System.out.println("Checking " + piece.color + " " + piece.type + " for check...");
-					for(HvlCoord c : getAllValidMoves(piece, board, player, false)){						
+					for(ClientMove c : getAllValidMoves(piece, board, player, false)){						
 						for(ClientPiece cp : board.activePieces) {
 							if(cp.color == PieceColor.black && cp.type == PieceType.king && cp.xPos == (int)c.x && cp.yPos == (int)c.y) {
 								//Check if this square can be safely captured...
@@ -134,8 +143,8 @@ public class ClientPieceLogic{
 	 * Finds all possible valid moves on this turn for this piece
 	 * @return an ArrayList of all valid move coordinates
 	 */
-	public static ArrayList<HvlCoord> getAllValidMoves(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
-		ArrayList<HvlCoord> moves = new ArrayList<HvlCoord>();
+	public static ArrayList<ClientMove> getAllValidMoves(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
+		ArrayList<ClientMove> moves = new ArrayList<ClientMove>();
 		if(pieceArg.type == PieceType.pawn) {
 			moves = pawnMoveCheck(pieceArg, boardArg, player, checkTest);
 		}else if(pieceArg.type == PieceType.knight) {
@@ -156,25 +165,45 @@ public class ClientPieceLogic{
 	 * Finds all possible valid moves on this turn for this piece, assuming it is a king
 	 * @return an ArrayList of all valid move coordinates
 	 */
-	private static ArrayList<HvlCoord> kingMoveCheck(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
+	private static ArrayList<ClientMove> kingMoveCheck(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
 		//TODO Castling
-		ArrayList<HvlCoord> moves = new ArrayList<HvlCoord>();
+		ArrayList<ClientMove> moves = new ArrayList<ClientMove>();
+
+		//Check if king hasn't moved, rook hasn't moved, spaces to the rook are clear, king is not in check,
+		//doing this will not put the king in check, and the king does not jump over a square that will put the king in check.
+
+		if(checkTest) {
+			if(!pieceArg.moved) {
+				//White right castle
+				if(pieceArg.color == PieceColor.white) {
+					if(!boardArg.isSpaceFree(7, 7) && boardArg.isSpaceFree(6, 7) && boardArg.isSpaceFree(5, 7)) {
+						if(boardArg.getPieceAt(7, 7).type == PieceType.rook && !boardArg.getPieceAt(7, 7).moved) {
+							if(legalMoveCheck(6, 7, pieceArg, boardArg, player)
+									&& legalMoveCheck(5, 7, pieceArg, boardArg, player)) {
+								moves.add(new ClientMove(6, 7, true));
+								//Need to also move the rook...
+							}
+						}
+					}
+				}
+			}
+		}
 
 		if(pieceArg.yPos >= 1) {
 			if(boardArg.isSpaceFree(pieceArg.xPos, pieceArg.yPos-1)) {
 				if(checkTest) {
 					if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos-1, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos-1));
+						moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos-1, false));
 				}else {
-					moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos-1));
+					moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos-1, false));
 				}
 			}else {
 				if(boardArg.getPieceAt(pieceArg.xPos, pieceArg.yPos-1).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos-1, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos-1));
+							moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos-1, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos-1));
+						moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos-1, false));
 					}
 				}
 			}
@@ -183,17 +212,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(pieceArg.xPos+1, pieceArg.yPos-1)) {
 				if(checkTest) {
 					if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos-1, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos-1));
+						moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos-1, false));
 				}else {
-					moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos-1));
+					moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos-1, false));
 				}
 			}else {
 				if(boardArg.getPieceAt(pieceArg.xPos+1, pieceArg.yPos-1).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos-1, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos-1));
+							moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos-1, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos-1));
+						moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos-1, false));
 					}
 				}
 			}
@@ -202,17 +231,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(pieceArg.xPos+1, pieceArg.yPos)) {
 				if(checkTest) {
 					if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos));
+						moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos, false));
 				}else {
-					moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos));
+					moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos, false));
 				}
 			}else {
 				if(boardArg.getPieceAt(pieceArg.xPos+1, pieceArg.yPos).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos));
+							moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos));
+						moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos, false));
 					}
 				}
 			}
@@ -221,17 +250,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(pieceArg.xPos+1, pieceArg.yPos+1)) {
 				if(checkTest) {
 					if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos+1, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos+1));
+						moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos+1, false));
 				}else {
-					moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos+1));
+					moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos+1, false));
 				}
 			}else {
 				if(boardArg.getPieceAt(pieceArg.xPos+1, pieceArg.yPos+1).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos+1, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos+1));
+							moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos+1, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos+1));
+						moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos+1, false));
 					}
 				}
 			}
@@ -240,17 +269,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(pieceArg.xPos, pieceArg.yPos+1)) {
 				if(checkTest) {
 					if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos+1, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos+1));
+						moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos+1, false));
 				}else {
-					moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos+1));
+					moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos+1, false));
 				}
 			}else {
 				if(boardArg.getPieceAt(pieceArg.xPos, pieceArg.yPos+1).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos+1, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos+1));
+							moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos+1, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos+1));
+						moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos+1, false));
 					}
 				}
 			}
@@ -259,17 +288,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(pieceArg.xPos-1, pieceArg.yPos+1)) {
 				if(checkTest) {
 					if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos+1, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos+1));
+						moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos+1, false));
 				}else {
-					moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos+1));
+					moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos+1, false));
 				}
 			}else {
 				if(boardArg.getPieceAt(pieceArg.xPos-1, pieceArg.yPos+1).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos+1, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos+1));
+							moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos+1, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos+1));
+						moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos+1, false));
 					}
 				}
 			}
@@ -279,17 +308,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(pieceArg.xPos-1, pieceArg.yPos)) {
 				if(checkTest) {
 					if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos));
+						moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos, false));
 				}else {
-					moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos));
+					moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos, false));
 				}
 			}else {
 				if(boardArg.getPieceAt(pieceArg.xPos-1, pieceArg.yPos).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos));
+							moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos));
+						moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos, false));
 					}
 				}
 			}
@@ -298,17 +327,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(pieceArg.xPos-1, pieceArg.yPos-1)) {
 				if(checkTest) {
 					if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos-1, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos-1));
+						moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos-1, false));
 				}else {
-					moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos-1));
+					moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos-1, false));
 				}
 			}else {
 				if(boardArg.getPieceAt(pieceArg.xPos-1, pieceArg.yPos-1).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos-1, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos-1));
+							moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos-1, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos-1));
+						moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos-1, false));
 					}
 				}
 			}
@@ -320,8 +349,8 @@ public class ClientPieceLogic{
 	 * Finds all possible valid moves on this turn for this piece, assuming it is a queen
 	 * @return an ArrayList of all valid move coordinates
 	 */
-	private static ArrayList<HvlCoord> queenMoveCheck(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
-		ArrayList<HvlCoord> moves = new ArrayList<HvlCoord>();
+	private static ArrayList<ClientMove> queenMoveCheck(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
+		ArrayList<ClientMove> moves = new ArrayList<ClientMove>();
 		//Upper-left squares
 		for(int i = 1; i <= 7; i++) {
 			boolean escape = false;
@@ -329,17 +358,17 @@ public class ClientPieceLogic{
 				if(boardArg.isSpaceFree(pieceArg.xPos-i, pieceArg.yPos-i)) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos-i, pieceArg.yPos-i, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos-i));
+							moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos-i, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos-i));
+						moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos-i, false));
 					}
 				}else {
 					if(boardArg.getPieceAt(pieceArg.xPos-i, pieceArg.yPos-i).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos-i, pieceArg.yPos-i, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos-i));
+								moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos-i, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos-i));
+							moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos-i, false));
 						}
 						escape = true;
 					}else {
@@ -358,17 +387,17 @@ public class ClientPieceLogic{
 				if(boardArg.isSpaceFree(pieceArg.xPos+i, pieceArg.yPos-i)) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos+i, pieceArg.yPos-i, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos-i));
+							moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos-i, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos-i));
+						moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos-i, false));
 					}
 				}else {
 					if(boardArg.getPieceAt(pieceArg.xPos+i, pieceArg.yPos-i).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos+i, pieceArg.yPos-i, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos-i));
+								moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos-i, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos-i));
+							moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos-i, false));
 						}
 						escape = true;
 					}else {
@@ -387,17 +416,17 @@ public class ClientPieceLogic{
 				if(boardArg.isSpaceFree(pieceArg.xPos-i, pieceArg.yPos+i)) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos-i, pieceArg.yPos+i, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos+i));
+							moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos+i, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos+i));
+						moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos+i, false));
 					}
 				}else {
 					if(boardArg.getPieceAt(pieceArg.xPos-i, pieceArg.yPos+i).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos-i, pieceArg.yPos+i, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos+i));
+								moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos+i, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos+i));
+							moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos+i, false));
 						}
 						escape = true;
 					}else {
@@ -416,17 +445,17 @@ public class ClientPieceLogic{
 				if(boardArg.isSpaceFree(pieceArg.xPos+i, pieceArg.yPos+i)) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos+i, pieceArg.yPos+i, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos+i));
+							moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos+i, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos+i));
+						moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos+i, false));
 					}
 				}else {
 					if(boardArg.getPieceAt(pieceArg.xPos+i, pieceArg.yPos+i).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos+i, pieceArg.yPos+i, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos+i));
+								moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos+i, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos+i));
+							moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos+i, false));
 						}
 						escape = true;
 					}else {
@@ -444,17 +473,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(i, pieceArg.yPos)) {
 				if(checkTest) {
 					if(legalMoveCheck(i, pieceArg.yPos, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(i, pieceArg.yPos));
+						moves.add(new ClientMove(i, pieceArg.yPos, false));
 				}else {
-					moves.add(new HvlCoord(i, pieceArg.yPos));
+					moves.add(new ClientMove(i, pieceArg.yPos, false));
 				}
 			}else {				
 				if(boardArg.getPieceAt(i, pieceArg.yPos).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(i, pieceArg.yPos, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(i, pieceArg.yPos));
+							moves.add(new ClientMove(i, pieceArg.yPos, false));
 					}else {
-						moves.add(new HvlCoord(i, pieceArg.yPos));
+						moves.add(new ClientMove(i, pieceArg.yPos, false));
 					}
 					escape = true;
 				}else {
@@ -469,17 +498,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(i, pieceArg.yPos)) {
 				if(checkTest) {
 					if(legalMoveCheck(i, pieceArg.yPos, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(i, pieceArg.yPos));
+						moves.add(new ClientMove(i, pieceArg.yPos, false));
 				}else {
-					moves.add(new HvlCoord(i, pieceArg.yPos));
+					moves.add(new ClientMove(i, pieceArg.yPos, false));
 				}
 			}else {				
 				if(boardArg.getPieceAt(i, pieceArg.yPos).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(i, pieceArg.yPos, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(i, pieceArg.yPos));
+							moves.add(new ClientMove(i, pieceArg.yPos, false));
 					}else {
-						moves.add(new HvlCoord(i, pieceArg.yPos));
+						moves.add(new ClientMove(i, pieceArg.yPos, false));
 					}
 					escape = true;
 				}else {
@@ -494,17 +523,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(pieceArg.xPos, i)) {
 				if(checkTest) {
 					if(legalMoveCheck(pieceArg.xPos, i, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos, i));
+						moves.add(new ClientMove(pieceArg.xPos, i, false));
 				}else {
-					moves.add(new HvlCoord(pieceArg.xPos, i));
+					moves.add(new ClientMove(pieceArg.xPos, i, false));
 				}
 			}else {				
 				if(boardArg.getPieceAt(pieceArg.xPos, i).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos, i, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos, i));
+							moves.add(new ClientMove(pieceArg.xPos, i, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos, i));
+						moves.add(new ClientMove(pieceArg.xPos, i, false));
 					}
 					escape = true;
 				}else {
@@ -519,17 +548,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(pieceArg.xPos, i)) {
 				if(checkTest) {
 					if(legalMoveCheck(pieceArg.xPos, i, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos, i));
+						moves.add(new ClientMove(pieceArg.xPos, i, false));
 				}else {
-					moves.add(new HvlCoord(pieceArg.xPos, i));
+					moves.add(new ClientMove(pieceArg.xPos, i, false));
 				}
 			}else {				
 				if(boardArg.getPieceAt(pieceArg.xPos, i).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos, i, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos, i));
+							moves.add(new ClientMove(pieceArg.xPos, i, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos, i));
+						moves.add(new ClientMove(pieceArg.xPos, i, false));
 					}
 					escape = true;
 				}else {
@@ -545,8 +574,8 @@ public class ClientPieceLogic{
 	 * Finds all possible valid moves on this turn for this piece, assuming it is a bishop
 	 * @return an ArrayList of all valid move coordinates
 	 */
-	private static ArrayList<HvlCoord> bishopMoveCheck(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
-		ArrayList<HvlCoord> moves = new ArrayList<HvlCoord>();
+	private static ArrayList<ClientMove> bishopMoveCheck(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
+		ArrayList<ClientMove> moves = new ArrayList<ClientMove>();
 
 		//Upper-left squares
 		for(int i = 1; i <= 7; i++) {
@@ -555,17 +584,17 @@ public class ClientPieceLogic{
 				if(boardArg.isSpaceFree(pieceArg.xPos-i, pieceArg.yPos-i)) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos-i, pieceArg.yPos-i, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos-i));
+							moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos-i, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos-i));
+						moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos-i, false));
 					}
 				}else {
 					if(boardArg.getPieceAt(pieceArg.xPos-i, pieceArg.yPos-i).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos-i, pieceArg.yPos-i, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos-i));
+								moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos-i, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos-i));
+							moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos-i, false));
 						}
 						escape = true;
 					}else {
@@ -584,17 +613,17 @@ public class ClientPieceLogic{
 				if(boardArg.isSpaceFree(pieceArg.xPos+i, pieceArg.yPos-i)) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos+i, pieceArg.yPos-i, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos-i));
+							moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos-i, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos-i));
+						moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos-i, false));
 					}
 				}else {
 					if(boardArg.getPieceAt(pieceArg.xPos+i, pieceArg.yPos-i).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos+i, pieceArg.yPos-i, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos-i));
+								moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos-i, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos-i));
+							moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos-i, false));
 						}
 						escape = true;
 					}else {
@@ -613,17 +642,17 @@ public class ClientPieceLogic{
 				if(boardArg.isSpaceFree(pieceArg.xPos-i, pieceArg.yPos+i)) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos-i, pieceArg.yPos+i, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos+i));
+							moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos+i, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos+i));
+						moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos+i, false));
 					}
 				}else {
 					if(boardArg.getPieceAt(pieceArg.xPos-i, pieceArg.yPos+i).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos-i, pieceArg.yPos+i, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos+i));
+								moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos+i, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos-i, pieceArg.yPos+i));
+							moves.add(new ClientMove(pieceArg.xPos-i, pieceArg.yPos+i, false));
 						}
 						escape = true;
 					}else {
@@ -642,17 +671,17 @@ public class ClientPieceLogic{
 				if(boardArg.isSpaceFree(pieceArg.xPos+i, pieceArg.yPos+i)) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos+i, pieceArg.yPos+i, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos+i));
+							moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos+i, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos+i));
+						moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos+i, false));
 					}
 				}else {
 					if(boardArg.getPieceAt(pieceArg.xPos+i, pieceArg.yPos+i).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos+i, pieceArg.yPos+i, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos+i));
+								moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos+i, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos+i, pieceArg.yPos+i));
+							moves.add(new ClientMove(pieceArg.xPos+i, pieceArg.yPos+i, false));
 						}
 						escape = true;
 					}else {
@@ -672,25 +701,25 @@ public class ClientPieceLogic{
 	 * Finds all possible valid moves on this turn for this piece, assuming it is a rook
 	 * @return an ArrayList of all valid move coordinates
 	 */
-	private static ArrayList<HvlCoord> rookMoveCheck(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
-		ArrayList<HvlCoord> moves = new ArrayList<HvlCoord>();		
+	private static ArrayList<ClientMove> rookMoveCheck(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
+		ArrayList<ClientMove> moves = new ArrayList<ClientMove>();		
 		//Right squares
 		for(int i = pieceArg.xPos+1; i <= 7; i++) {
 			boolean escape = false;
 			if(boardArg.isSpaceFree(i, pieceArg.yPos)) {
 				if(checkTest) {
 					if(legalMoveCheck(i, pieceArg.yPos, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(i, pieceArg.yPos));
+						moves.add(new ClientMove(i, pieceArg.yPos, false));
 				}else {
-					moves.add(new HvlCoord(i, pieceArg.yPos));
+					moves.add(new ClientMove(i, pieceArg.yPos, false));
 				}
 			}else {				
 				if(boardArg.getPieceAt(i, pieceArg.yPos).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(i, pieceArg.yPos, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(i, pieceArg.yPos));
+							moves.add(new ClientMove(i, pieceArg.yPos, false));
 					}else {
-						moves.add(new HvlCoord(i, pieceArg.yPos));
+						moves.add(new ClientMove(i, pieceArg.yPos, false));
 					}
 					escape = true;
 				}else {
@@ -705,17 +734,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(i, pieceArg.yPos)) {
 				if(checkTest) {
 					if(legalMoveCheck(i, pieceArg.yPos, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(i, pieceArg.yPos));
+						moves.add(new ClientMove(i, pieceArg.yPos, false));
 				}else {
-					moves.add(new HvlCoord(i, pieceArg.yPos));
+					moves.add(new ClientMove(i, pieceArg.yPos, false));
 				}
 			}else {				
 				if(boardArg.getPieceAt(i, pieceArg.yPos).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(i, pieceArg.yPos, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(i, pieceArg.yPos));
+							moves.add(new ClientMove(i, pieceArg.yPos, false));
 					}else {
-						moves.add(new HvlCoord(i, pieceArg.yPos));
+						moves.add(new ClientMove(i, pieceArg.yPos, false));
 					}
 					escape = true;
 				}else {
@@ -730,17 +759,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(pieceArg.xPos, i)) {
 				if(checkTest) {
 					if(legalMoveCheck(pieceArg.xPos, i, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos, i));
+						moves.add(new ClientMove(pieceArg.xPos, i, false));
 				}else {
-					moves.add(new HvlCoord(pieceArg.xPos, i));
+					moves.add(new ClientMove(pieceArg.xPos, i, false));
 				}
 			}else {				
 				if(boardArg.getPieceAt(pieceArg.xPos, i).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos, i, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos, i));
+							moves.add(new ClientMove(pieceArg.xPos, i, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos, i));
+						moves.add(new ClientMove(pieceArg.xPos, i, false));
 					}
 					escape = true;
 				}else {
@@ -755,17 +784,17 @@ public class ClientPieceLogic{
 			if(boardArg.isSpaceFree(pieceArg.xPos, i)) {
 				if(checkTest) {
 					if(legalMoveCheck(pieceArg.xPos, i, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos, i));
+						moves.add(new ClientMove(pieceArg.xPos, i, false));
 				}else {
-					moves.add(new HvlCoord(pieceArg.xPos, i));
+					moves.add(new ClientMove(pieceArg.xPos, i, false));
 				}
 			}else {				
 				if(boardArg.getPieceAt(pieceArg.xPos, i).color != pieceArg.color) {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos, i, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos, i));
+							moves.add(new ClientMove(pieceArg.xPos, i, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos, i));
+						moves.add(new ClientMove(pieceArg.xPos, i, false));
 					}
 					escape = true;
 				}else {
@@ -781,8 +810,8 @@ public class ClientPieceLogic{
 	 * Finds all possible valid moves on this turn for this piece, assuming it is a knight
 	 * @return an ArrayList of all valid move coordinates
 	 */
-	private static ArrayList<HvlCoord> knightMoveCheck(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
-		ArrayList<HvlCoord> moves = new ArrayList<HvlCoord>();	
+	private static ArrayList<ClientMove> knightMoveCheck(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
+		ArrayList<ClientMove> moves = new ArrayList<ClientMove>();	
 		//Rightmost moves
 		if(pieceArg.xPos <= 5) {
 			//Upper
@@ -791,17 +820,17 @@ public class ClientPieceLogic{
 					if(boardArg.getPieceAt(pieceArg.xPos+2, pieceArg.yPos-1).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos+2, pieceArg.yPos-1, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos+2, pieceArg.yPos-1));
+								moves.add(new ClientMove(pieceArg.xPos+2, pieceArg.yPos-1, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos+2, pieceArg.yPos-1));
+							moves.add(new ClientMove(pieceArg.xPos+2, pieceArg.yPos-1, false));
 						}
 					}
 				}else {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos+2, pieceArg.yPos-1, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos+2, pieceArg.yPos-1));
+							moves.add(new ClientMove(pieceArg.xPos+2, pieceArg.yPos-1, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos+2, pieceArg.yPos-1));
+						moves.add(new ClientMove(pieceArg.xPos+2, pieceArg.yPos-1, false));
 					}
 				}
 			}
@@ -811,17 +840,17 @@ public class ClientPieceLogic{
 					if(boardArg.getPieceAt(pieceArg.xPos+2, pieceArg.yPos+1).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos+2, pieceArg.yPos+1, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos+2, pieceArg.yPos+1));
+								moves.add(new ClientMove(pieceArg.xPos+2, pieceArg.yPos+1, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos+2, pieceArg.yPos+1));
+							moves.add(new ClientMove(pieceArg.xPos+2, pieceArg.yPos+1, false));
 						}
 					}
 				}else {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos+2, pieceArg.yPos+1, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos+2, pieceArg.yPos+1));
+							moves.add(new ClientMove(pieceArg.xPos+2, pieceArg.yPos+1, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos+2, pieceArg.yPos+1));
+						moves.add(new ClientMove(pieceArg.xPos+2, pieceArg.yPos+1, false));
 					}
 				}
 			}
@@ -834,17 +863,17 @@ public class ClientPieceLogic{
 					if(boardArg.getPieceAt(pieceArg.xPos+1, pieceArg.yPos-2).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos-2, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos-2));
+								moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos-2, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos-2));
+							moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos-2, false));
 						}
 					}
 				}else {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos-2, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos-2));
+							moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos-2, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos-2));
+						moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos-2, false));
 					}
 				}
 			}
@@ -854,17 +883,17 @@ public class ClientPieceLogic{
 					if(boardArg.getPieceAt(pieceArg.xPos+1, pieceArg.yPos+2).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos+2, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos+2));
+								moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos+2, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos+2));
+							moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos+2, false));
 						}
 					}
 				}else {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos+2, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos+2));
+							moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos+2, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos+2));
+						moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos+2, false));
 					}
 				}
 			}
@@ -877,17 +906,17 @@ public class ClientPieceLogic{
 					if(boardArg.getPieceAt(pieceArg.xPos-1, pieceArg.yPos+2).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos+2, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos+2));
+								moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos+2, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos+2));
+							moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos+2, false));
 						}
 					}
 				}else {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos+2, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos+2));
+							moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos+2, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos+2));
+						moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos+2, false));
 					}
 				}
 			}
@@ -897,17 +926,17 @@ public class ClientPieceLogic{
 					if(boardArg.getPieceAt(pieceArg.xPos-1, pieceArg.yPos-2).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos-2, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos-2));
+								moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos-2, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos-2));
+							moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos-2, false));
 						}
 					}
 				}else {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos-2, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos-2));
+							moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos-2, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos-2));
+						moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos-2, false));
 					}
 				}
 			}
@@ -920,17 +949,17 @@ public class ClientPieceLogic{
 					if(boardArg.getPieceAt(pieceArg.xPos-2, pieceArg.yPos+1).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos-2, pieceArg.yPos+1, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos-2, pieceArg.yPos+1));
+								moves.add(new ClientMove(pieceArg.xPos-2, pieceArg.yPos+1, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos-2, pieceArg.yPos+1));
+							moves.add(new ClientMove(pieceArg.xPos-2, pieceArg.yPos+1, false));
 						}
 					}
 				}else {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos-2, pieceArg.yPos+1, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos-2, pieceArg.yPos+1));
+							moves.add(new ClientMove(pieceArg.xPos-2, pieceArg.yPos+1, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos-2, pieceArg.yPos+1));
+						moves.add(new ClientMove(pieceArg.xPos-2, pieceArg.yPos+1, false));
 					}
 				}
 			}
@@ -940,17 +969,17 @@ public class ClientPieceLogic{
 					if(boardArg.getPieceAt(pieceArg.xPos-2, pieceArg.yPos-1).color != pieceArg.color) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos-2, pieceArg.yPos-1, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos-2, pieceArg.yPos-1));
+								moves.add(new ClientMove(pieceArg.xPos-2, pieceArg.yPos-1, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos-2, pieceArg.yPos-1));
+							moves.add(new ClientMove(pieceArg.xPos-2, pieceArg.yPos-1, false));
 						}
 					}
 				}else {
 					if(checkTest) {
 						if(legalMoveCheck(pieceArg.xPos-2, pieceArg.yPos-1, pieceArg, boardArg, player))
-							moves.add(new HvlCoord(pieceArg.xPos-2, pieceArg.yPos-1));
+							moves.add(new ClientMove(pieceArg.xPos-2, pieceArg.yPos-1, false));
 					}else {
-						moves.add(new HvlCoord(pieceArg.xPos-2, pieceArg.yPos-1));
+						moves.add(new ClientMove(pieceArg.xPos-2, pieceArg.yPos-1, false));
 					}
 				}
 			}
@@ -962,33 +991,37 @@ public class ClientPieceLogic{
 	 * Finds all possible valid moves on this turn for this piece, assuming it is a pawn
 	 * @return an ArrayList of all valid move coordinates
 	 */
-	private static ArrayList<HvlCoord> pawnMoveCheck(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
+	private static ArrayList<ClientMove> pawnMoveCheck(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
 		//TODO promotion
-		ArrayList<HvlCoord> moves = new ArrayList<HvlCoord>();
+		ArrayList<ClientMove> moves = new ArrayList<ClientMove>();
 		//Advancing moves
 
 		if(pieceArg.color == PieceColor.white) {
 			if(pieceArg.yPos == 6) {
-				if(checkTest) {
-					if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos-1, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos-1));
-				}else {
-					moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos-1));
-				}
-				if(checkTest) {
-					if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos-2, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos-2));
-				}else {
-					moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos-2));
+				if(boardArg.isSpaceFree(pieceArg.xPos, pieceArg.yPos-1)) {
+					if(checkTest) {
+						if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos-1, pieceArg, boardArg, player))
+							moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos-1, false));
+					}else {
+						moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos-1, false));
+					}
+					if(boardArg.isSpaceFree(pieceArg.xPos, pieceArg.yPos-2)) {
+						if(checkTest) {
+							if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos-2, pieceArg, boardArg, player))
+								moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos-2, false));
+						}else {
+							moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos-2, false));
+						}
+					}
 				}
 			}else {
 				if(pieceArg.yPos-1 >= 0) {
 					if(boardArg.isSpaceFree(pieceArg.xPos, pieceArg.yPos-1)) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos-1, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos-1));
+								moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos-1, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos-1));
+							moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos-1, false));
 						}
 					}
 				}
@@ -999,9 +1032,9 @@ public class ClientPieceLogic{
 					if(boardArg.getPieceAt(pieceArg.xPos+1, pieceArg.yPos-1).color == PieceColor.black) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos-1, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos-1));
+								moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos-1, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos-1));
+							moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos-1, false));
 						}
 					}
 				}
@@ -1011,35 +1044,39 @@ public class ClientPieceLogic{
 					if(boardArg.getPieceAt(pieceArg.xPos-1, pieceArg.yPos-1).color == PieceColor.black) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos-1, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos-1));
+								moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos-1, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos-1));
+							moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos-1, false));
 						}
 					}
 				}		
 			}
 		} else if(pieceArg.color == PieceColor.black) {
 			if(pieceArg.yPos == 1) {
-				if(checkTest) {
-					if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos+1, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos+1));
-				}else {
-					moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos+1));
-				}
-				if(checkTest) {
-					if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos+2, pieceArg, boardArg, player))
-						moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos+2));
-				}else {
-					moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos+2));
+				if(boardArg.isSpaceFree(pieceArg.xPos, pieceArg.yPos+1)) {
+					if(checkTest) {
+						if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos+1, pieceArg, boardArg, player))
+							moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos+1, false));
+					}else {
+						moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos+1, false));
+					}
+					if(boardArg.isSpaceFree(pieceArg.xPos, pieceArg.yPos+2)) {
+						if(checkTest) {
+							if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos+2, pieceArg, boardArg, player))
+								moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos+2, false));
+						}else {
+							moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos+2, false));
+						}
+					}
 				}
 			}else {
 				if(pieceArg.yPos+1 <= 7) {
 					if(boardArg.isSpaceFree(pieceArg.xPos, pieceArg.yPos+1)) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos, pieceArg.yPos+1, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos+1));
+								moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos+1, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos, pieceArg.yPos+1));
+							moves.add(new ClientMove(pieceArg.xPos, pieceArg.yPos+1, false));
 						}
 					}
 				}
@@ -1050,9 +1087,9 @@ public class ClientPieceLogic{
 					if(boardArg.getPieceAt(pieceArg.xPos+1, pieceArg.yPos+1).color == PieceColor.white) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos+1, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos+1));
+								moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos+1, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos+1, pieceArg.yPos+1));
+							moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos+1, false));
 						}
 					}
 				}
@@ -1062,9 +1099,9 @@ public class ClientPieceLogic{
 					if(boardArg.getPieceAt(pieceArg.xPos-1, pieceArg.yPos+1).color == PieceColor.white) {
 						if(checkTest) {
 							if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos+1, pieceArg, boardArg, player))
-								moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos+1));
+								moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos+1, false));
 						}else {
-							moves.add(new HvlCoord(pieceArg.xPos-1, pieceArg.yPos+1));
+							moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos+1, false));
 						}
 					}
 				}		

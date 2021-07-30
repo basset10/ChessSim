@@ -13,12 +13,13 @@ public class ClientMain extends HvlTemplateI{
 	private ClientGame game;
 
 	//Castling, promotion
-	//Checkmate detection
-	//Stalemate detection (Player has no legal moves but is not in check)
 	//Server disconnection
 	//Full server indication
 	//CLEANING
 	//extras?
+	
+	//End the game on the client's end when a checkmate/stalemate is determined, and send a GameOverPacket to the server.
+	//Server responds by telling the other client they won or it is a stalemate.
 	
 	//Currently disconnects as soon as the server relays the other player lost connection.
 	//May need to add some buffer time in case of packet delay
