@@ -35,7 +35,7 @@ public class ClientMenuManager {
 		hvlFont(0).drawc("Connect", Display.getWidth()/2, Display.getHeight()/2, Color.white, 2f);
 		if(Util.leftMouseClick()) {
 			game.state = GameState.connecting;
-			ClientNetworkManager.connect("localhost", 25565);			
+			ClientNetworkManager.connect("50.82.229.245", 25565);			
 		} 
 	}
 	

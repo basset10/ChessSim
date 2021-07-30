@@ -351,6 +351,7 @@ public class ClientGame {
 					}
 				}else {
 					if(gameEndState == GAME_END_STATE_CHECKMATE) {
+						//Gives the wrong turn number to black if white wins (need to add one)
 						hvlFont(0).drawc("GG! Checkmate by " + finalMove.toString() + " in " + moveCount + " moves.", Display.getWidth()/2, Display.getHeight()-20, 1.2f);
 					}else {
 						hvlFont(0).drawc("Stalemate!", Display.getWidth()/2, Display.getHeight()-20, 1.2f);

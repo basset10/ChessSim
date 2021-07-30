@@ -30,9 +30,9 @@ public class ClientBoard {
 			board.add(new ArrayList<ClientBoardSpace>());			
 			for(int j = 0; j < 8; j++) {
 				if(blackFlag) {
-					board.get(i).add(new ClientBoardSpace(j, i, Color.black));
-				}else {
 					board.get(i).add(new ClientBoardSpace(j, i, Color.white));
+				}else {
+					board.get(i).add(new ClientBoardSpace(j, i, Color.black));
 				}
 				if(j != 7) blackFlag = !blackFlag;
 			}
@@ -82,9 +82,9 @@ public class ClientBoard {
 			board.add(new ArrayList<ClientBoardSpace>());			
 			for(int j = 0; j < 8; j++) {
 				if(blackFlag) {
-					board.get(i).add(new ClientBoardSpace(j, i, Color.black));
-				}else {
 					board.get(i).add(new ClientBoardSpace(j, i, Color.white));
+				}else {
+					board.get(i).add(new ClientBoardSpace(j, i, Color.black));
 				}
 				if(j != 7) blackFlag = !blackFlag;
 			}
