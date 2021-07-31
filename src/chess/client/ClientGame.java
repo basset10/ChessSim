@@ -44,25 +44,29 @@ public class ClientGame {
 		connecting,
 		connected;
 	}
-
+	
+	public GameState state = GameState.menu;
+	
+	private ClientBoard board;
+	private ClientPlayer player;
 	private boolean debug = false;
-	PacketCollectivePlayerStatus playerPacket = new PacketCollectivePlayerStatus();
+	private PacketCollectivePlayerStatus playerPacket = new PacketCollectivePlayerStatus();
 	private SamplePlayerClient sampleplayer;
 	private HashMap<String, ClientPlayer> otherPlayers = new HashMap<String, ClientPlayer>();
 	private String id;
-	public ClientBoard board;
-	public ClientPlayer player;
 	private ArrayList<ClientMove> validMoves = new ArrayList<ClientMove>();
 	private int selectedPiecexPos = -1;
 	private int selectedPieceyPos = -1;
 	private boolean boardInitialized = false;
 	private boolean normalInput = true;
 	private boolean playersTurn = false;
-	public GameState state = GameState.menu;
-	public PlayerColor finalMove;
-	public boolean inCheck = false;
-	public int gameEndState = GAME_END_STATE_CONTINUE;
-	public int moveCount = 0;
+	private PlayerColor finalMove;
+	private boolean inCheck = false;
+	private int gameEndState = GAME_END_STATE_CONTINUE;
+	private int moveCount = 0;
+	private boolean promotionUI = false;
+	private int promotionX = -1;
+	private int promotionY = -1;
 
 	public ClientGame(String id) {
 		sampleplayer = new SamplePlayerClient();
@@ -78,6 +82,7 @@ public class ClientGame {
 	}
 
 	public void drawValidMoves() {
+		//ClientPromotionTypeUI.draw(player);
 		for(ClientMove m : validMoves) {
 			if(player.color == PlayerColor.black) {
 				hvlDraw(hvlQuadc(Util.convertToPixelPositionXBlack(m.x), Util.convertToPixelPositionYBlack(m.y), 10, 10), hvlColor(0f, 1f, 0f));
@@ -101,6 +106,7 @@ public class ClientGame {
 		gameEndState = GAME_END_STATE_CONTINUE;
 		finalMove = null;
 		moveCount = 0;
+		promotionUI = false;
 	}
 
 	public void update(float delta){
@@ -208,6 +214,7 @@ public class ClientGame {
 											}
 										}														
 									}
+									
 									//if the move packet indicates a pawn moved two spaces, set that pawn to enPassantVulnerable
 									if(p.type == PieceType.pawn && (movePacket.packet.intendedMoveY == movePacket.packet.existingPieceY + 2
 											|| movePacket.packet.intendedMoveY == movePacket.packet.existingPieceY - 2)) {
@@ -254,8 +261,23 @@ public class ClientGame {
 										}
 									}
 
+									//Move the piece to its intended position
 									p.xPos = movePacket.packet.intendedMoveX;
 									p.yPos = movePacket.packet.intendedMoveY;
+									
+									//if the move packet indicates a pawn needs to be promoted, locate and promote that pawn.
+									if(movePacket.packet.promotionType != PacketClientMove.PAWN_PROMOTION_FALSE) {
+										if(movePacket.packet.promotionType == PacketClientMove.PAWN_PROMOTION_QUEEN) {
+											p.type = PieceType.queen;
+										}else if(movePacket.packet.promotionType == PacketClientMove.PAWN_PROMOTION_KNIGHT) {
+											p.type = PieceType.knight;
+										}else if(movePacket.packet.promotionType == PacketClientMove.PAWN_PROMOTION_ROOK) {
+											p.type = PieceType.rook;
+										}else if(movePacket.packet.promotionType == PacketClientMove.PAWN_PROMOTION_BISHOP) {
+											p.type = PieceType.bishop;
+										}
+									}
+									
 									if(!p.moved) p.moved = true;
 									inCheck = ClientPieceLogic.getCheckState(board, player);
 									gameEndState = ClientPieceLogic.getGameEndState(board, player, inCheck);
@@ -298,141 +320,216 @@ public class ClientGame {
 					if(gameEndState == GAME_END_STATE_CONTINUE) {
 						if(playersTurn) {
 							hvlFont(0).drawc("It is your turn", Display.getWidth()/2, Display.getHeight()-20, 1.2f);
-							for(ClientPiece p : board.activePieces) {
-								if(player.color == PlayerColor.white) {
-									if((Util.getCursorX() >= p.getPixelPositionWhitePerspective().x - ClientPiece.PIECE_SIZE/2
-											&& Util.getCursorX() <= p.getPixelPositionWhitePerspective().x + ClientPiece.PIECE_SIZE/2
-											&& Util.getCursorY() >= p.getPixelPositionWhitePerspective().y - ClientPiece.PIECE_SIZE/2
-											&& Util.getCursorY() <= p.getPixelPositionWhitePerspective().y + ClientPiece.PIECE_SIZE/2)
-											&& Util.leftMouseClick() && p.color.toString().equals(player.color.toString())) {
-										System.out.println("You clicked a " + p.color + " " + p.type + " on space [ " + p.xPos + ", " + p.yPos + " ]");
-										selectedPiecexPos = p.xPos;
-										selectedPieceyPos = p.yPos;
-										validMoves = p.getAllValidMoves(board, player);
-									}
-								} else if(player.color == PlayerColor.black) {
-									if((Util.getCursorX() >= p.getPixelPositionBlackPerspective().x - ClientPiece.PIECE_SIZE/2
-											&& Util.getCursorX() <= p.getPixelPositionBlackPerspective().x + ClientPiece.PIECE_SIZE/2
-											&& Util.getCursorY() >= p.getPixelPositionBlackPerspective().y - ClientPiece.PIECE_SIZE/2
-											&& Util.getCursorY() <= p.getPixelPositionBlackPerspective().y + ClientPiece.PIECE_SIZE/2)
-											&& Util.leftMouseClick() && p.color.toString().equals(player.color.toString())) {
-										System.out.println("You clicked a " + p.color + " " + p.type + " on space [ " + p.xPos + ", " + p.yPos + " ]");
-										selectedPiecexPos = p.xPos;
-										selectedPieceyPos = p.yPos;
-										validMoves = p.getAllValidMoves(board, player);
-									}
-								}
-							}
-
-							//If a valid move is attempted as defined in ClientPieceLogic, execute the move.
-							for(ClientMove m : validMoves) {
-								boolean escape = false;
-								if(player.color == PlayerColor.black) {
-									if((Util.getCursorX() >= Util.convertToPixelPositionXBlack(m.x) - ClientBoardSpace.SPACE_SIZE/2
-											&& Util.getCursorX() <= Util.convertToPixelPositionXBlack(m.x) + ClientBoardSpace.SPACE_SIZE/2
-											&& Util.getCursorY() >= Util.convertToPixelPositionYBlack(m.y) - ClientBoardSpace.SPACE_SIZE/2
-											&& Util.getCursorY() <= Util.convertToPixelPositionYBlack(m.y) + ClientBoardSpace.SPACE_SIZE/2)
-											&& Util.leftMouseClick()) {
-
-										HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE, new PacketClientMove(selectedPiecexPos, selectedPieceyPos, m.x, m.y, id, m.castle, m.enPassant));
-
-										for(ClientPiece p : board.activePieces) {
-
-											if(p.xPos == selectedPiecexPos && p.yPos == selectedPieceyPos) {					
-												//Claim any piece existing on the attempted move's square
-												if(!board.isSpaceFree(m.x, m.y)) {
-													for(int i = 0; i < board.activePieces.size(); i++) {
-														if(board.activePieces.get(i).xPos == m.x && board.activePieces.get(i).yPos == m.y) {
-															board.claimedPieces.add(board.activePieces.get(i));
-															board.activePieces.remove(i);
-															break;
-														}
-													}														
-												}						
-												//Move piece to new square
-												p.xPos = m.x;
-												p.yPos = m.y;
-												//If the move is en passant, detect and remove the appropriate pawn.
-												for(int i = 0; i < board.activePieces.size(); i++) {
-													if(board.activePieces.get(i).xPos == m.x && board.activePieces.get(i).yPos == m.y-1) {
-														board.claimedPieces.add(board.activePieces.get(i));
-														board.activePieces.remove(i);
-														break;
-													}
-												}
-												//If the move is a castle, detect and move the appropriate rook
-												if(m.castle) {
-													if(m.x == 6 && m.y == 0) {
-														board.getPieceAt(7, 0).xPos = 5;
-													}else if(m.x == 2 && m.y == 0) {
-														board.getPieceAt(0, 0).xPos = 3;
-													}
-												}
-
-												if(!p.moved) p.moved = true;
-												validMoves.clear();
-												escape = true;
-												playersTurn = false;
-												moveCount++;
-											}					
-											if(escape) break;
+							if(!promotionUI) {
+								for(ClientPiece p : board.activePieces) {
+									if(player.color == PlayerColor.white) {
+										if((Util.getCursorX() >= p.getPixelPositionWhitePerspective().x - ClientPiece.PIECE_SIZE/2
+												&& Util.getCursorX() <= p.getPixelPositionWhitePerspective().x + ClientPiece.PIECE_SIZE/2
+												&& Util.getCursorY() >= p.getPixelPositionWhitePerspective().y - ClientPiece.PIECE_SIZE/2
+												&& Util.getCursorY() <= p.getPixelPositionWhitePerspective().y + ClientPiece.PIECE_SIZE/2)
+												&& Util.leftMouseClick() && p.color.toString().equals(player.color.toString())) {
+											System.out.println("You clicked a " + p.color + " " + p.type + " on space [ " + p.xPos + ", " + p.yPos + " ]");
+											selectedPiecexPos = p.xPos;
+											selectedPieceyPos = p.yPos;
+											validMoves = p.getAllValidMoves(board, player);
 										}
-									}
-								} else if(player.color == PlayerColor.white) {
-
-									if((Util.getCursorX() >= Util.convertToPixelPositionXWhite(m.x) - ClientBoardSpace.SPACE_SIZE/2
-											&& Util.getCursorX() <= Util.convertToPixelPositionXWhite(m.x) + ClientBoardSpace.SPACE_SIZE/2
-											&& Util.getCursorY() >= Util.convertToPixelPositionYWhite(m.y) - ClientBoardSpace.SPACE_SIZE/2
-											&& Util.getCursorY() <= Util.convertToPixelPositionYWhite(m.y) + ClientBoardSpace.SPACE_SIZE/2)
-											&& Util.leftMouseClick()) {
-
-										HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE, new PacketClientMove(selectedPiecexPos, selectedPieceyPos, m.x, m.y, id, m.castle, m.enPassant));
-
-										for(ClientPiece p : board.activePieces) {
-											if(p.xPos == selectedPiecexPos && p.yPos == selectedPieceyPos) {					
-												//Claim any piece existing on the attempted move's square
-												if(!board.isSpaceFree(m.x, m.y)) {
-													for(int i = 0; i < board.activePieces.size(); i++) {
-														if(board.activePieces.get(i).xPos == m.x && board.activePieces.get(i).yPos == m.y) {
-															board.claimedPieces.add(board.activePieces.get(i));
-															board.activePieces.remove(i);
-															break;
-														}
-													}														
-												}						
-												//Move piece to new square
-												p.xPos = m.x;
-												p.yPos = m.y;
-												//If the move is en passant, detect and remove the appropriate pawn.
-												if(m.enPassant) {
-													for(int i = 0; i < board.activePieces.size(); i++) {
-														if(board.activePieces.get(i).xPos == m.x && board.activePieces.get(i).yPos == m.y+1) {
-															board.claimedPieces.add(board.activePieces.get(i));
-															board.activePieces.remove(i);
-															break;
-														}
-													}
-												}
-
-												//If the move is a castle, detect and move the appropriate rook
-												if(m.castle) {
-													if(m.x == 6 && m.y == 7) {
-														board.getPieceAt(7, 7).xPos = 5;
-													}else if(m.x == 2 && m.y == 7) {
-														board.getPieceAt(0, 7).xPos = 3;
-													}
-												}
-												if(!p.moved) p.moved = true;
-												validMoves.clear();
-												escape = true;
-												playersTurn = false;
-												moveCount++;
-											}					
-											if(escape) break;
+									} else if(player.color == PlayerColor.black) {
+										if((Util.getCursorX() >= p.getPixelPositionBlackPerspective().x - ClientPiece.PIECE_SIZE/2
+												&& Util.getCursorX() <= p.getPixelPositionBlackPerspective().x + ClientPiece.PIECE_SIZE/2
+												&& Util.getCursorY() >= p.getPixelPositionBlackPerspective().y - ClientPiece.PIECE_SIZE/2
+												&& Util.getCursorY() <= p.getPixelPositionBlackPerspective().y + ClientPiece.PIECE_SIZE/2)
+												&& Util.leftMouseClick() && p.color.toString().equals(player.color.toString())) {
+											System.out.println("You clicked a " + p.color + " " + p.type + " on space [ " + p.xPos + ", " + p.yPos + " ]");
+											selectedPiecexPos = p.xPos;
+											selectedPieceyPos = p.yPos;
+											validMoves = p.getAllValidMoves(board, player);
 										}
 									}
 								}
-								if(escape) break;
+
+
+								//If a valid move is attempted as defined in ClientPieceLogic, execute the move.
+								for(ClientMove m : validMoves) {
+									boolean escape = false;
+									if(player.color == PlayerColor.black) {
+										if((Util.getCursorX() >= Util.convertToPixelPositionXBlack(m.x) - ClientBoardSpace.SPACE_SIZE/2
+												&& Util.getCursorX() <= Util.convertToPixelPositionXBlack(m.x) + ClientBoardSpace.SPACE_SIZE/2
+												&& Util.getCursorY() >= Util.convertToPixelPositionYBlack(m.y) - ClientBoardSpace.SPACE_SIZE/2
+												&& Util.getCursorY() <= Util.convertToPixelPositionYBlack(m.y) + ClientBoardSpace.SPACE_SIZE/2)
+												&& Util.leftMouseClick()) {
+
+											//HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE, new PacketClientMove(selectedPiecexPos, selectedPieceyPos, m.x, m.y, id, m.castle, m.enPassant));
+
+											for(ClientPiece p : board.activePieces) {
+
+												if(p.xPos == selectedPiecexPos && p.yPos == selectedPieceyPos) {					
+													//Claim any piece existing on the attempted move's square
+													if(!board.isSpaceFree(m.x, m.y)) {
+														for(int i = 0; i < board.activePieces.size(); i++) {
+															if(board.activePieces.get(i).xPos == m.x && board.activePieces.get(i).yPos == m.y) {
+																board.claimedPieces.add(board.activePieces.get(i));
+																board.activePieces.remove(i);
+																break;
+															}
+														}														
+													}						
+													//Move piece to new square
+													p.xPos = m.x;
+													p.yPos = m.y;
+													//If the move is a promotion, upgrade the pawn.
+													if(p.yPos == 7 && p.type==PieceType.pawn) {
+														promotionUI = true;
+														validMoves.clear();
+														escape = true;
+														moveCount++;
+														promotionX = p.xPos;
+														promotionY = p.yPos;
+													}
+
+													//If the move is en passant, detect and remove the appropriate pawn.
+													if(m.enPassant) {
+														for(int i = 0; i < board.activePieces.size(); i++) {
+															if(board.activePieces.get(i).xPos == m.x && board.activePieces.get(i).yPos == m.y-1) {
+																board.claimedPieces.add(board.activePieces.get(i));
+																board.activePieces.remove(i);
+																break;
+															}
+														}
+													}
+													//If the move is a castle, detect and move the appropriate rook
+													if(m.castle) {
+														if(m.x == 6 && m.y == 0) {
+															board.getPieceAt(7, 0).xPos = 5;
+														}else if(m.x == 2 && m.y == 0) {
+															board.getPieceAt(0, 0).xPos = 3;
+														}
+													}
+
+													if(!p.moved) p.moved = true;
+													validMoves.clear();
+													escape = true;
+													if(!promotionUI) playersTurn = false;
+													moveCount++;
+												}					
+												if(escape) {
+													if(!promotionUI) {
+														HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE,
+																new PacketClientMove(selectedPiecexPos, selectedPieceyPos, m.x, m.y, id, m.castle, m.enPassant, PacketClientMove.PAWN_PROMOTION_FALSE));
+													}
+													break;
+												}
+											}
+										}
+									} else if(player.color == PlayerColor.white) {
+
+										if((Util.getCursorX() >= Util.convertToPixelPositionXWhite(m.x) - ClientBoardSpace.SPACE_SIZE/2
+												&& Util.getCursorX() <= Util.convertToPixelPositionXWhite(m.x) + ClientBoardSpace.SPACE_SIZE/2
+												&& Util.getCursorY() >= Util.convertToPixelPositionYWhite(m.y) - ClientBoardSpace.SPACE_SIZE/2
+												&& Util.getCursorY() <= Util.convertToPixelPositionYWhite(m.y) + ClientBoardSpace.SPACE_SIZE/2)
+												&& Util.leftMouseClick()) {
+
+											//HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE, new PacketClientMove(selectedPiecexPos, selectedPieceyPos, m.x, m.y, id, m.castle, m.enPassant));
+
+											for(ClientPiece p : board.activePieces) {
+												if(p.xPos == selectedPiecexPos && p.yPos == selectedPieceyPos) {					
+													//Claim any piece existing on the attempted move's square
+													if(!board.isSpaceFree(m.x, m.y)) {
+														for(int i = 0; i < board.activePieces.size(); i++) {
+															if(board.activePieces.get(i).xPos == m.x && board.activePieces.get(i).yPos == m.y) {
+																board.claimedPieces.add(board.activePieces.get(i));
+																board.activePieces.remove(i);
+																break;
+															}
+														}														
+													}						
+													//Move piece to new square
+													p.xPos = m.x;
+													p.yPos = m.y;
+													if(p.yPos == 0 && p.type==PieceType.pawn) {
+														promotionUI = true;
+														validMoves.clear();
+														escape = true;
+														moveCount++;
+														promotionX = p.xPos;
+														promotionY = p.yPos;
+													}
+													//If the move is en passant, detect and remove the appropriate pawn.
+													if(m.enPassant) {
+														for(int i = 0; i < board.activePieces.size(); i++) {
+															if(board.activePieces.get(i).xPos == m.x && board.activePieces.get(i).yPos == m.y+1) {
+																board.claimedPieces.add(board.activePieces.get(i));
+																board.activePieces.remove(i);
+																break;
+															}
+														}
+													}
+
+													//If the move is a castle, detect and move the appropriate rook
+													if(m.castle) {
+														if(m.x == 6 && m.y == 7) {
+															board.getPieceAt(7, 7).xPos = 5;
+														}else if(m.x == 2 && m.y == 7) {
+															board.getPieceAt(0, 7).xPos = 3;
+														}
+													}
+													if(!p.moved) p.moved = true;
+													validMoves.clear();
+													escape = true;
+													if(!promotionUI) playersTurn = false;
+													moveCount++;
+												}					
+												if(escape) break;
+											}
+										}
+									}
+									if(escape) {
+										if(!promotionUI) {
+											HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE,
+													new PacketClientMove(selectedPiecexPos, selectedPieceyPos, m.x, m.y, id, m.castle, m.enPassant, PacketClientMove.PAWN_PROMOTION_FALSE));
+										}
+										break;
+									}
+								}
+							}else {
+								//if promotion UI...
+								ClientPromotionTypeUI.draw(player);
+								if(Util.getCursorX() <= Display.getWidth()/2 + 425+55+48 && Util.getCursorX() >= Display.getWidth()/2 + 425+55-48
+										&& Util.getCursorY() <= Display.getHeight()/2+55+48 && Util.getCursorY() >= Display.getHeight()/2+55-48
+										&& Util.leftMouseClick()) {
+									HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE,
+											new PacketClientMove(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id, false, false, PacketClientMove.PAWN_PROMOTION_QUEEN));
+									board.getPieceAt(promotionX, promotionY).type = PieceType.queen;
+									promotionUI = false;
+									playersTurn = false;
+								}
+								if(Util.getCursorX() <= Display.getWidth()/2 + 425+55+48 && Util.getCursorX() >= Display.getWidth()/2 + 425+55-48
+										&& Util.getCursorY() <= Display.getHeight()/2-55+48 && Util.getCursorY() >= Display.getHeight()/2-55-48
+										&& Util.leftMouseClick()) {
+									HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE,
+											new PacketClientMove(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id, false, false, PacketClientMove.PAWN_PROMOTION_KNIGHT));
+									board.getPieceAt(promotionX, promotionY).type = PieceType.knight;
+									promotionUI = false;
+									playersTurn = false;
+								}
+								if(Util.getCursorX() <= Display.getWidth()/2 + 425-55+48 && Util.getCursorX() >= Display.getWidth()/2 + 425-55-48
+										&& Util.getCursorY() <= Display.getHeight()/2+55+48 && Util.getCursorY() >= Display.getHeight()/2+55-48
+										&& Util.leftMouseClick()) {
+									HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE,
+											new PacketClientMove(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id, false, false, PacketClientMove.PAWN_PROMOTION_ROOK));
+									board.getPieceAt(promotionX, promotionY).type = PieceType.rook;
+									promotionUI = false;
+									playersTurn = false;
+								}
+								if(Util.getCursorX() <= Display.getWidth()/2 + 425-55+48 && Util.getCursorX() >= Display.getWidth()/2 + 425-55-48
+										&& Util.getCursorY() <= Display.getHeight()/2-55+48 && Util.getCursorY() >= Display.getHeight()/2-55-48
+										&& Util.leftMouseClick()) {
+									HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE,
+											new PacketClientMove(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id, false, false, PacketClientMove.PAWN_PROMOTION_BISHOP));
+									board.getPieceAt(promotionX, promotionY).type = PieceType.bishop;
+									promotionUI = false;
+									playersTurn = false;
+								}
+
 							}
 						}else {
 							hvlFont(0).drawc("Waiting for opponent", Display.getWidth()/2, Display.getHeight()-20, 1.2f);
