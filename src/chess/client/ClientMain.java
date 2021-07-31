@@ -12,7 +12,7 @@ public class ClientMain extends HvlTemplateI{
 
 	private ClientGame game;
 
-	//promotion, en passant
+	//Pawn promotion
 	//Server disconnection
 	//Full server indication
 	//CLEANING

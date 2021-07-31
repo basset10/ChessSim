@@ -329,9 +329,40 @@ public class ClientPieceLogic{
 	private static ArrayList<ClientMove> pawnMoveCheck(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
 		//TODO promotion
 		ArrayList<ClientMove> moves = new ArrayList<ClientMove>();
-		//Advancing moves
 
 		if(pieceArg.color == PieceColor.white) {
+
+			//En passant moves
+			if(pieceArg.yPos == 3) {
+				//Left en passant check
+				if(pieceArg.xPos-1 >= 0) {
+					if(!boardArg.isSpaceFree(pieceArg.xPos-1, pieceArg.yPos) && boardArg.isSpaceFree(pieceArg.xPos-1, pieceArg.yPos-1)) {
+						if(boardArg.getPieceAt(pieceArg.xPos-1, pieceArg.yPos).enPassantVulnerable) {
+							if(checkTest) {
+								if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos-1, pieceArg, boardArg, player))
+									moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos-1, false, true));
+							}else {
+								moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos-1, false, true));
+							}
+						}
+					}
+				}
+				//Right en passant check
+				if(pieceArg.xPos+1 <= 7) {
+					if(!boardArg.isSpaceFree(pieceArg.xPos+1, pieceArg.yPos) && boardArg.isSpaceFree(pieceArg.xPos+1, pieceArg.yPos-1)) {
+						if(boardArg.getPieceAt(pieceArg.xPos+1, pieceArg.yPos).enPassantVulnerable) {
+							if(checkTest) {
+								if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos-1, pieceArg, boardArg, player))
+									moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos-1, false, true));
+							}else {
+								moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos-1, false, true));
+							}
+						}
+					}
+				}
+			}
+
+			//Advancing moves
 			if(pieceArg.yPos == 6) {
 				if(boardArg.isSpaceFree(pieceArg.xPos, pieceArg.yPos-1)) {
 					if(checkTest) {
@@ -369,6 +400,36 @@ public class ClientPieceLogic{
 				pawnAttackCheck(pieceArg.xPos-1, pieceArg.yPos-1, moves, pieceArg, boardArg, player, checkTest);		
 			}
 		} else if(pieceArg.color == PieceColor.black) {
+			//En passant moves
+			if(pieceArg.yPos == 4) {
+				//Left en passant check
+				if(pieceArg.xPos-1 >= 0) {
+					if(!boardArg.isSpaceFree(pieceArg.xPos-1, pieceArg.yPos) && boardArg.isSpaceFree(pieceArg.xPos-1, pieceArg.yPos+1)) {
+						if(boardArg.getPieceAt(pieceArg.xPos-1, pieceArg.yPos).enPassantVulnerable) {
+							if(checkTest) {
+								if(legalMoveCheck(pieceArg.xPos-1, pieceArg.yPos+1, pieceArg, boardArg, player))
+									moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos+1, false, true));
+							}else {
+								moves.add(new ClientMove(pieceArg.xPos-1, pieceArg.yPos+1, false, true));
+							}
+						}
+					}
+				}
+				//Right en passant check
+				if(pieceArg.xPos+1 <= 7) {
+					if(!boardArg.isSpaceFree(pieceArg.xPos+1, pieceArg.yPos) && boardArg.isSpaceFree(pieceArg.xPos+1, pieceArg.yPos+1)) {
+						if(boardArg.getPieceAt(pieceArg.xPos+1, pieceArg.yPos).enPassantVulnerable) {
+							if(checkTest) {
+								if(legalMoveCheck(pieceArg.xPos+1, pieceArg.yPos+1, pieceArg, boardArg, player))
+									moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos+1, false, true));
+							}else {
+								moves.add(new ClientMove(pieceArg.xPos+1, pieceArg.yPos+1, false, true));
+							}
+						}
+					}
+				}
+			}
+			
 			//Advancing moves
 			if(pieceArg.yPos == 1) {
 				if(boardArg.isSpaceFree(pieceArg.xPos, pieceArg.yPos+1)) {

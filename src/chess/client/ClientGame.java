@@ -192,7 +192,10 @@ public class ClientGame {
 							System.out.println("Your id: " + id);					
 							System.out.println("Attempting to move piece at " + movePacket.packet.existingPieceX + ", " + movePacket.packet.existingPieceY 
 									+ ". This piece is a " + board.getPieceAt(movePacket.packet.existingPieceX, movePacket.packet.existingPieceY ).color + " "
-									+ board.getPieceAt(movePacket.packet.existingPieceX, movePacket.packet.existingPieceY ).type);				
+									+ board.getPieceAt(movePacket.packet.existingPieceX, movePacket.packet.existingPieceY ).type);
+							for(ClientPiece pc : board.activePieces) {
+								if(pc.enPassantVulnerable) pc.enPassantVulnerable = false;
+							}
 							for(ClientPiece p : board.activePieces) {
 								boolean escape = false;
 								if(p.xPos == movePacket.packet.existingPieceX && p.yPos == movePacket.packet.existingPieceY) {			
@@ -205,6 +208,39 @@ public class ClientGame {
 											}
 										}														
 									}
+									//if the move packet indicates a pawn moved two spaces, set that pawn to enPassantVulnerable
+									if(p.type == PieceType.pawn && (movePacket.packet.intendedMoveY == movePacket.packet.existingPieceY + 2
+											|| movePacket.packet.intendedMoveY == movePacket.packet.existingPieceY - 2)) {
+										p.enPassantVulnerable = true;
+									}
+
+									//if a move packet labeled as "enPassant" is received, detect and remove the appropriate pawn.
+									if(movePacket.packet.enPassant) {
+										System.out.println("En passant packet received!");
+										//White perspective
+										if(movePacket.packet.intendedMoveY == 2) {
+											for(int i = 0; i < board.activePieces.size(); i++) {
+												if(board.activePieces.get(i).xPos == movePacket.packet.intendedMoveX 
+														&& board.activePieces.get(i).yPos == movePacket.packet.intendedMoveY+1) {
+													board.claimedPieces.add(board.activePieces.get(i));
+													board.activePieces.remove(i);
+													break;
+												}
+											}	
+										}
+										//Black perspective
+										if(movePacket.packet.intendedMoveY == 5) {
+											for(int i = 0; i < board.activePieces.size(); i++) {
+												if(board.activePieces.get(i).xPos == movePacket.packet.intendedMoveX 
+														&& board.activePieces.get(i).yPos == movePacket.packet.intendedMoveY-1) {
+													board.claimedPieces.add(board.activePieces.get(i));
+													board.activePieces.remove(i);
+													break;
+												}
+											}	
+										}
+									}
+
 									//if a move packet labeled as "castle" is received, detect and move the appropriate rook.
 									if(movePacket.packet.castled) {
 										if(movePacket.packet.intendedMoveX == 6 && movePacket.packet.intendedMoveY == 7) {
@@ -217,7 +253,7 @@ public class ClientGame {
 											board.getPieceAt(0, 0).xPos = 3;
 										}
 									}
-									
+
 									p.xPos = movePacket.packet.intendedMoveX;
 									p.yPos = movePacket.packet.intendedMoveY;
 									if(!p.moved) p.moved = true;
@@ -316,6 +352,15 @@ public class ClientGame {
 												//Move piece to new square
 												p.xPos = m.x;
 												p.yPos = m.y;
+												//If the move is en passant, detect and remove the appropriate pawn.
+												for(int i = 0; i < board.activePieces.size(); i++) {
+													if(board.activePieces.get(i).xPos == m.x && board.activePieces.get(i).yPos == m.y-1) {
+														board.claimedPieces.add(board.activePieces.get(i));
+														board.activePieces.remove(i);
+														break;
+													}
+												}
+												//If the move is a castle, detect and move the appropriate rook
 												if(m.castle) {
 													if(m.x == 6 && m.y == 0) {
 														board.getPieceAt(7, 0).xPos = 5;
@@ -323,13 +368,7 @@ public class ClientGame {
 														board.getPieceAt(0, 0).xPos = 3;
 													}
 												}
-												
-												if(m.castle) {
-													if(m.x == 6 && m.y == 7) {
-														board.getPieceAt(7, 7).xPos = 5;
-													}
-												}
-												
+
 												if(!p.moved) p.moved = true;
 												validMoves.clear();
 												escape = true;
@@ -364,6 +403,17 @@ public class ClientGame {
 												//Move piece to new square
 												p.xPos = m.x;
 												p.yPos = m.y;
+												//If the move is en passant, detect and remove the appropriate pawn.
+												if(m.enPassant) {
+													for(int i = 0; i < board.activePieces.size(); i++) {
+														if(board.activePieces.get(i).xPos == m.x && board.activePieces.get(i).yPos == m.y+1) {
+															board.claimedPieces.add(board.activePieces.get(i));
+															board.activePieces.remove(i);
+															break;
+														}
+													}
+												}
+
 												//If the move is a castle, detect and move the appropriate rook
 												if(m.castle) {
 													if(m.x == 6 && m.y == 7) {
