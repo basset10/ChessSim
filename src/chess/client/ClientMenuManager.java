@@ -18,6 +18,7 @@ public class ClientMenuManager {
 		main,
 		connect,
 		options,	
+		lostConnectionToOpponent
 	}
 	
 	public static void manageMenus(ClientGame game) {
@@ -27,6 +28,8 @@ public class ClientMenuManager {
 			operateConnectMenu();
 		}else if(menu == MenuState.options) {
 			operateOptionsMenu();
+		}else if(menu == MenuState.lostConnectionToOpponent) {
+			operateLostConnectionToOpponentMenu();
 		}
 	}
 	
@@ -35,7 +38,16 @@ public class ClientMenuManager {
 		hvlFont(0).drawc("Connect", Display.getWidth()/2, Display.getHeight()/2, Color.white, 2f);
 		if(Util.leftMouseClick()) {
 			game.state = GameState.connecting;
-			ClientNetworkManager.connect("50.82.229.245", 25565);			
+			ClientNetworkManager.connect("localhost", 25565);			
+		} 
+	}
+	
+	private static void operateLostConnectionToOpponentMenu() {
+		hvlFont(0).drawc("Lost connection to opponent!", Display.getWidth()/2, Display.getHeight()/3, Color.white, 2f);
+		hvlDraw(hvlQuadc(Display.getWidth()/2, Display.getHeight()/2, 300, 100), Color.lightGray);
+		hvlFont(0).drawc("Return", Display.getWidth()/2, Display.getHeight()/2, Color.white, 2f);
+		if(Util.leftMouseClick()) {
+			menu = MenuState.main;		
 		} 
 	}
 	

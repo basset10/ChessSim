@@ -12,14 +12,11 @@ public class ClientMain extends HvlTemplateI{
 
 	private ClientGame game;
 
-	//Castling, promotion
+	//promotion, en passant
 	//Server disconnection
 	//Full server indication
 	//CLEANING
 	//extras?
-	
-	//End the game on the client's end when a checkmate/stalemate is determined, and send a GameOverPacket to the server.
-	//Server responds by telling the other client they won or it is a stalemate.
 	
 	//Currently disconnects as soon as the server relays the other player lost connection.
 	//May need to add some buffer time in case of packet delay
@@ -39,8 +36,6 @@ public class ClientMain extends HvlTemplateI{
 	public void initialize() {
 		ClientLoader.loadTextures();
 		ClientNetworkManager.initialize();
-		//Immediately attempts to connect to localhost on startup
-		//ClientNetworkManager.connect("localhost", 25565);
 		game = new ClientGame(ClientNetworkManager.id);
 
 	}

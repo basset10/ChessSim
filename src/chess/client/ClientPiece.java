@@ -39,6 +39,7 @@ public class ClientPiece {
 	public int yPos;
 	public PieceType type;
 	public PieceColor color;
+	public boolean enPassantVulnerable = false;
 
 	public ClientPiece(PieceType typeArg, PieceColor colorArg, int xPosArg, int yPosArg) {
 		type = typeArg;

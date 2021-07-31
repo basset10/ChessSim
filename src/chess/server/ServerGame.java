@@ -61,6 +61,7 @@ public class ServerGame {
 				((HvlAgentServerAnarchy)HvlDirect.getAgent()).getTable(i).remove(NetworkUtil.KEY_CLIENT_GAME_READY);
 			}
 
+			
 			if(HvlDirect.getKeys(i).contains(NetworkUtil.KEY_CLIENT_MOVE)) {
 				PacketClientMove movePacket = HvlDirect.getValue(i, NetworkUtil.KEY_CLIENT_MOVE);
 				System.out.println("move attemped by client " + movePacket.id + " from space [" + movePacket.existingPieceX + "," + movePacket.existingPieceY + "] to space [" +

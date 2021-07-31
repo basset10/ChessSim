@@ -10,15 +10,18 @@ public class PacketClientMove implements Serializable{
 	public int intendedMoveX;
 	public int intendedMoveY;
 	public boolean castled;
+	public boolean enPassant;
 	
 	public String id;
 	
-	public PacketClientMove(int existingPieceXArg, int existingPieceYArg, int intendedMoveXArg, int intendedMoveYArg, String idArg) {
+	public PacketClientMove(int existingPieceXArg, int existingPieceYArg, int intendedMoveXArg, int intendedMoveYArg, String idArg, boolean castledArg, boolean enPassantArg) {
 		existingPieceX = existingPieceXArg;
 		existingPieceY = existingPieceYArg;
 		intendedMoveX = intendedMoveXArg;
 		intendedMoveY = intendedMoveYArg;
 		id = idArg;
+		castled = castledArg;
+		enPassant = enPassantArg;
 	}
 	
 }
