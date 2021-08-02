@@ -29,7 +29,6 @@ public class ServerGame {
 	public static int playerTurn = PLAYER_WHITE;
 
 	private static boolean boardInitialized = false;
-	private static boolean gameOver = false;
 
 	public void update() {
 
@@ -37,8 +36,6 @@ public class ServerGame {
 		HashMap<String, PacketClientGameReady> collectiveClientGameReady = new HashMap<String, PacketClientGameReady>();
 
 		//receive packets from clients...
-
-
 		//Collect all player status packets and create CollectivePlayerStatus packet.
 		for(HvlIdentityAnarchy i : HvlDirect.<HvlIdentityAnarchy>getConnections()) {
 
@@ -76,8 +73,6 @@ public class ServerGame {
 				}
 				((HvlAgentServerAnarchy)HvlDirect.getAgent()).getTable(i).remove(NetworkUtil.KEY_CLIENT_MOVE);
 			}
-
-
 		}
 
 		//send packets to clients...
@@ -101,7 +96,6 @@ public class ServerGame {
 				}
 			}
 		}
-
 	}
 
 	public void reset() {
@@ -109,5 +103,4 @@ public class ServerGame {
 		secondColor = false;
 		playerTurn = PLAYER_WHITE;
 	}
-
 }

@@ -3,15 +3,14 @@ package chess.common;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
-import com.osreboot.ridhvl2.HvlCoord;
-
 import chess.client.ClientBoardSpace;
+import chess.client.ClientPlayer;
 
 public class Util {
 
 	private static boolean leftMouseState = false;
 	private static boolean leftMouseClick = false;
-	
+
 
 	public static int getCursorX(){
 		return Mouse.getX();
@@ -21,28 +20,23 @@ public class Util {
 		return Display.getHeight() - Mouse.getY();
 	}
 
-	public static float convertToPixelPositionXWhite(int xArg) {
-		float x = ((xArg)*ClientBoardSpace.SPACE_SIZE + Display.getWidth()/2 - ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2));
-		return x;
+	public static float convertToPixelPositionX(int xArg, ClientPlayer p) {
+		if(p.color == ClientPlayer.PlayerColor.white) {
+			return ((xArg)*ClientBoardSpace.SPACE_SIZE + Display.getWidth()/2 - ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2));
+		}else {
+			return (xArg)*-ClientBoardSpace.SPACE_SIZE + Display.getWidth()/2 + ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2);
+		}
 	}
 
-	public static float convertToPixelPositionYWhite(int yArg) {
-		float y = (yArg)*ClientBoardSpace.SPACE_SIZE + Display.getHeight()/2 - ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2);
-		return y;
+	public static float convertToPixelPositionY(int yArg, ClientPlayer p) {
+		if(p.color == ClientPlayer.PlayerColor.white) {
+			return (yArg)*ClientBoardSpace.SPACE_SIZE + Display.getHeight()/2 - ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2);
+		}else {
+			return (yArg)*-ClientBoardSpace.SPACE_SIZE + Display.getHeight()/2 + ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2);
+		}
 	}
 	
-	public static float convertToPixelPositionXBlack(int xArg) {
-		float x = (xArg)*-ClientBoardSpace.SPACE_SIZE + Display.getWidth()/2 + ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2);
-		return x;
-	}
-
-	public static float convertToPixelPositionYBlack(int yArg) {
-		float y = (yArg)*-ClientBoardSpace.SPACE_SIZE + Display.getHeight()/2 + ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2);
-		return y;
-	}
-
 	public static void update() {
-
 		if(leftMouseClick) {
 			leftMouseClick = false;
 		}else {
@@ -60,12 +54,10 @@ public class Util {
 			leftMouseState = false;
 		}		
 	}	
-	
+
 	public static boolean leftMouseClick() {
 		return leftMouseClick;
 	}
-
-
 }
 
 

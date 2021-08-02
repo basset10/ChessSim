@@ -5,26 +5,19 @@ import java.util.ArrayList;
 import chess.client.ClientBoardSpace.Color;
 import chess.client.ClientPiece.PieceColor;
 import chess.client.ClientPiece.PieceType;
-import chess.client.ClientPlayer.PlayerColor;
-import chess.common.Util;
 
 //The board the client sees and interacts with.
 public class ClientBoard {
 
 	public ArrayList<ArrayList<ClientBoardSpace>> board;
-
-	//ArrayList containing all pieces currently in play. Pieces store their own type, color, and grid position.
+	//ArrayList containing all pieces currently in play.
 	public ArrayList<ClientPiece> activePieces = new ArrayList<ClientPiece>();
-
 	//ArrayList containing all pieces no longer in play.
 	public ArrayList<ClientPiece> claimedPieces = new ArrayList<ClientPiece>();
-
 	
-
 	public ClientBoard(ArrayList<ClientPiece> activePiecesArg) {
 		activePieces = activePiecesArg;
 		board = new ArrayList<ArrayList<ClientBoardSpace>>();	
-
 		boolean blackFlag = true;
 		for(int i = 0; i < 8; i++) {
 			board.add(new ArrayList<ClientBoardSpace>());			
@@ -39,44 +32,18 @@ public class ClientBoard {
 		}
 	}
 
-
 	public ClientBoard(ClientPlayer player) {
 		//Initialize the board with starting pieces.
 		initialize(player);
-
 	}
-
 
 	public void update(float delta, ClientPlayer player) {
 		this.draw(player);
 	}
 
-	public void print() {
-		for(int i = 0; i < board.size(); i++) {
-			for(int j = 0; j < board.get(i).size(); j++) {
-
-				boolean free = true;
-
-				for(int k = 0; k < activePieces.size(); k++) {
-					if(activePieces.get(k).xPos == j && activePieces.get(k).yPos == i) {
-						System.out.print("[" + activePieces.get(k).type + "]");
-						free = false;
-					}					
-
-				}
-				if(free) {
-					System.out.print("[free]");
-				}	
-			}
-			System.out.println("");
-		}
-	}
-
-	//create and fill board with starting pieces
+	//Create the game board and populate it with starting pieces
 	public void initialize(ClientPlayer player) {
-
 		board = new ArrayList<ArrayList<ClientBoardSpace>>();	
-
 		boolean blackFlag = true;
 		for(int i = 0; i < 8; i++) {
 			board.add(new ArrayList<ClientBoardSpace>());			
@@ -89,11 +56,10 @@ public class ClientBoard {
 				if(j != 7) blackFlag = !blackFlag;
 			}
 		}
-
 		assembleBoard();
-
 	}
 
+	//populate the game board with starting pieces
 	private void assembleBoard() {
 		activePieces.add(new ClientPiece(PieceType.rook, PieceColor.black, 0, 0));
 		activePieces.add(new ClientPiece(PieceType.knight, PieceColor.black, 1, 0));
@@ -131,23 +97,10 @@ public class ClientBoard {
 		activePieces.add(new ClientPiece(PieceType.knight, PieceColor.white, 6, 7));
 		activePieces.add(new ClientPiece(PieceType.rook, PieceColor.white, 7, 7));
 	}
-	
-	public boolean multiplePiecesOnThisSquare(int x, int y) {
-		int count = 0;
-		for(ClientPiece p :activePieces) {
-			if(p.xPos == x && p.yPos == y) {
-				count++;
-			}
-		}
-		
-		if(count > 1) {
-			return true;
-		}else {
-			return false;
-		}
-		
-	}
 
+	/**
+	 * Returns true if the given board space (x, y) does not currently hold a piece.
+	 */
 	public boolean isSpaceFree(int xArg, int yArg) {
 		for(int i = 0; i < activePieces.size(); i++) {
 			if(activePieces.get(i).xPos == xArg && activePieces.get(i).yPos == yArg) {
@@ -156,8 +109,13 @@ public class ClientBoard {
 		}
 		return true;
 	}
-
+	
+	/**
+	 * Returns the piece currently located on the given board position.
+	 */
 	public ClientPiece getPieceAt(int xArg, int yArg){
+		
+		if(!isSpaceFree(xArg, yArg)) {
 		for(int i = 0; i < this.activePieces.size(); i++) {
 			if(this.activePieces.get(i).xPos == xArg && activePieces.get(i).yPos == yArg) {
 				try {
@@ -169,6 +127,10 @@ public class ClientBoard {
 		}
 		System.out.println("ERROR! Cannot locate piece at " + xArg + ", " + yArg);
 		return new ClientPiece();
+		}else {
+			System.out.println("There is no piece on " + xArg + ", " + yArg);
+			return new ClientPiece();
+		}
 	}
 
 	//Returns the board space at a given x and y position.
@@ -177,22 +139,15 @@ public class ClientBoard {
 	}
 
 	private void draw(ClientPlayer player) {
-
 		//Draw the board itself
 		for(int i = 0; i < board.size(); i++) {	
 			for(int j = 0; j < board.get(i).size(); j++) {
-
 				getSpaceAt(i, j).draw();				
 			}			
 		}
-
 		//Draw the board pieces in their current locations
 		for(int i = 0; i < activePieces.size(); i++) {
 			activePieces.get(i).draw(player);
 		}
-
-
-
 	}
-
 }

@@ -36,5 +36,4 @@ public class ClientNetworkManager {
 		HvlDirect.disconnect();
 		isConnected = false;
 	}
-
 }

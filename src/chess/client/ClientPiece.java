@@ -15,11 +15,7 @@ import chess.client.ClientPlayer.PlayerColor;
 public class ClientPiece {
 
 	public static final int PIECE_SIZE = 50;
-	//Used to check castling legality
 	public boolean moved = false;
-
-	//Need to check for all possible valid moves, per piece. Store these moves in an arraylist somehow.
-	//First just get valid moves working regardless of player order or turn
 
 	enum PieceType{
 		pawn(ClientLoader.INDEX_PAWN_BLACK, ClientLoader.INDEX_PAWN_WHITE),
@@ -63,30 +59,25 @@ public class ClientPiece {
 		return moves;
 	}
 
+	public HvlCoord getPixelPosition(ClientPlayer p) {
+		if(p.color == PlayerColor.white) {
+			return new HvlCoord((xPos)*ClientBoardSpace.SPACE_SIZE + Display.getWidth()/2 - ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2),
+					(yPos)*ClientBoardSpace.SPACE_SIZE + Display.getHeight()/2 - ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2));
 
-	public HvlCoord getPixelPositionWhitePerspective() {
-		return new HvlCoord((xPos)*ClientBoardSpace.SPACE_SIZE + Display.getWidth()/2 - ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2),
-				(yPos)*ClientBoardSpace.SPACE_SIZE + Display.getHeight()/2 - ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2));
-	}
+		}else {
 
-	public HvlCoord getPixelPositionBlackPerspective() {
-		return new HvlCoord((xPos)*-ClientBoardSpace.SPACE_SIZE + Display.getWidth()/2 + ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2),
-				(yPos)*-ClientBoardSpace.SPACE_SIZE + Display.getHeight()/2 + ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2));
+			return new HvlCoord((xPos)*-ClientBoardSpace.SPACE_SIZE + Display.getWidth()/2 + ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2),
+					(yPos)*-ClientBoardSpace.SPACE_SIZE + Display.getHeight()/2 + ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2));
+
+		}
 	}
 
 	public void draw(ClientPlayer p) {
-		if(p.color == PlayerColor.white) {
-			if(this.color == PieceColor.white) {
-				hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(this.type.whiteTexture));
-			}else {
-				hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(this.type.blackTexture));
-			}
-		}else if(p.color == PlayerColor.black) {
-			if(this.color == PieceColor.white) {
-				hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(this.type.whiteTexture));
-			}else {
-				hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(this.type.blackTexture));
-			}
+		if(color == PieceColor.black) {
+			hvlDraw(hvlQuadc(getPixelPosition(p).x, getPixelPosition(p).y, PIECE_SIZE, PIECE_SIZE), hvlTexture(type.blackTexture));
+		}else {
+			hvlDraw(hvlQuadc(getPixelPosition(p).x, getPixelPosition(p).y, PIECE_SIZE, PIECE_SIZE), hvlTexture(type.whiteTexture));
 		}
 	}
 }
+

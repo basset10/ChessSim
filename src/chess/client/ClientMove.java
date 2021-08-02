@@ -13,5 +13,4 @@ public class ClientMove {
 		this.castle = castle;
 		this.enPassant = enPassant;
 	}
-	
 }

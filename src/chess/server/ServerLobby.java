@@ -3,9 +3,7 @@ package chess.server;
 
 import java.util.HashSet;
 
-
 import com.osreboot.hvol2.base.anarchy.HvlIdentityAnarchy;
-import com.osreboot.hvol2.direct.HvlDirect;
 
 public class ServerLobby {
 	private HashSet<HvlIdentityAnarchy> ids;
@@ -20,8 +18,7 @@ public class ServerLobby {
 		game.update();
 		//drawStatusInfo();
 	}
-	
-	
+		
 	public void onConnect(HvlIdentityAnarchy identity){
 		ids.add(identity);
 	}
@@ -35,13 +32,4 @@ public class ServerLobby {
 		return ids;
 	}
 	
-	private void drawStatusInfo(){		
-		String statusInfo = "";
-		statusInfo += "Client UUIDs:\\n";
-		for(HvlIdentityAnarchy identity : HvlDirect.<HvlIdentityAnarchy>getConnections()){
-			statusInfo += identity.getName() + "\\n";
-		}
-		System.out.println(statusInfo);
-	}
-
 }

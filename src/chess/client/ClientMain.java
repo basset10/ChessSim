@@ -5,7 +5,6 @@ import com.osreboot.ridhvl2.template.HvlChronology;
 import com.osreboot.ridhvl2.template.HvlDisplayWindowed;
 import com.osreboot.ridhvl2.template.HvlTemplateI;
 
-import chess.client.ClientGame.GameState;
 import chess.common.Util;
 
 public class ClientMain extends HvlTemplateI{
@@ -39,7 +38,6 @@ public class ClientMain extends HvlTemplateI{
 		ClientLoader.loadTextures();
 		ClientNetworkManager.initialize();
 		game = new ClientGame(ClientNetworkManager.id);
-
 	}
 
 	@Override

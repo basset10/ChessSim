@@ -19,6 +19,8 @@ public class ClientLoader {
 							INDEX_KING_BLACK = 11;
 	
 	public static void loadTextures() {
+		hvlLoad("INOF.hvlft");   	  	// font
+		hvlFont(0);
 		hvlLoad("PawnWhite.png");		// 0
 		hvlLoad("RookWhite.png");		// 1
 		hvlLoad("KnightWhite.png"); 	// 2
@@ -31,8 +33,5 @@ public class ClientLoader {
 		hvlLoad("BishopBlack.png");		// 9
 		hvlLoad("QueenBlack.png");		// 10
 		hvlLoad("KingBlack.png");		// 11
-		hvlLoad("INOF.hvlft");   	  	// font
-		hvlFont(0);
 	}
-
 }

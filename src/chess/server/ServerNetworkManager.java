@@ -33,8 +33,7 @@ public class ServerNetworkManager {
 			System.out.println("Disconnection - " + i);
 			lobby.onDisconnect((HvlIdentityAnarchy)i);
 		});
-		
-		
+				
 		//Create a lobby for clients to connect to.
 		lobby = new ServerLobby();
 	}

@@ -1,6 +1,5 @@
 package chess.client;
 
-import static com.osreboot.ridhvl2.HvlStatics.hvlColor;
 import static com.osreboot.ridhvl2.HvlStatics.hvlDraw;
 import static com.osreboot.ridhvl2.HvlStatics.hvlFont;
 import static com.osreboot.ridhvl2.HvlStatics.hvlQuadc;
@@ -8,8 +7,6 @@ import static com.osreboot.ridhvl2.HvlStatics.hvlTexture;
 
 import org.lwjgl.opengl.Display;
 import org.newdawn.slick.Color;
-
-import chess.common.Util;
 
 public class ClientPromotionTypeUI {
 	
@@ -46,8 +43,6 @@ public class ClientPromotionTypeUI {
 			hvlDraw(hvlQuadc(Display.getWidth()/2 + 425+55, Display.getHeight()/2-55, 80, 80), hvlTexture(ClientLoader.INDEX_KNIGHT_WHITE));
 			hvlDraw(hvlQuadc(Display.getWidth()/2 + 425-55, Display.getHeight()/2+55, 80, 80), hvlTexture(ClientLoader.INDEX_ROOK_WHITE));
 			hvlDraw(hvlQuadc(Display.getWidth()/2 + 425-55, Display.getHeight()/2-55, 80, 80), hvlTexture(ClientLoader.INDEX_BISHOP_WHITE));
-		}
-		
-	}
-	
+		}		
+	}	
 }

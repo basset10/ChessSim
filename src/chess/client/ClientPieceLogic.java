@@ -10,8 +10,7 @@ public class ClientPieceLogic{
 
 	//Used to determine if a potential move will put the user in self-check.
 	public static boolean legalMoveCheck(int intendedX, int intendedY, ClientPiece selectedPiece, ClientBoard boardArg, ClientPlayer playerArg) {
-		System.out.println("Verifying legality of move " + selectedPiece.color + " " + selectedPiece.type + " to space " + intendedX + ", " + intendedY);
-		//Temporary board to simulate attempted move
+		//System.out.println("Verifying legality of move " + selectedPiece.color + " " + selectedPiece.type + " to space " + intendedX + ", " + intendedY);
 		ArrayList<ClientPiece> piecesCopy = new ArrayList<ClientPiece>();
 
 		for(ClientPiece p : boardArg.activePieces) {
@@ -104,16 +103,16 @@ public class ClientPieceLogic{
 							if(cp.color == PieceColor.white && cp.type == PieceType.king && cp.xPos == c.x && cp.yPos == c.y) {
 								//Check if this square can be safely captured...
 
-								System.out.println(piece.color + " " + piece.type + " has a valid move on " + c.x + ", " + c.y);
-								System.out.println("your King (white) located on " + c.x + ", " + c.y);
-								System.out.println("King is in check!");
+								//System.out.println(piece.color + " " + piece.type + " has a valid move on " + c.x + ", " + c.y);
+								//System.out.println("your King (white) located on " + c.x + ", " + c.y);
+								//System.out.println("King is in check!");
 								return true;								
 							}
 						}
 					}
 				}
 			}
-			System.out.println("King is not in check");
+			//System.out.println("King is not in check");
 		}else if(player.color == PlayerColor.black) {
 			for(ClientPiece piece : board.activePieces) {
 				if(piece.color == PieceColor.white) {
@@ -123,16 +122,16 @@ public class ClientPieceLogic{
 							if(cp.color == PieceColor.black && cp.type == PieceType.king && cp.xPos == c.x && cp.yPos == c.y) {
 								//Check if this square can be safely captured...
 
-								System.out.println(piece.color + " " + piece.type + " has a valid move on " + c.x + ", " + c.y);
-								System.out.println("your King (black) located on " + c.x + ", " + c.y);
-								System.out.println("King is in check!");
+								//System.out.println(piece.color + " " + piece.type + " has a valid move on " + c.x + ", " + c.y);
+								//System.out.println("your King (black) located on " + c.x + ", " + c.y);
+								//System.out.println("King is in check!");
 								return true;
 							}
 						}
 					}
 				}
 			}
-			System.out.println("King is not in check");
+			//System.out.println("King is not in check");
 		}
 		return false;
 	}
