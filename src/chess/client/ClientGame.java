@@ -12,16 +12,11 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.newdawn.slick.Color;
 
-import com.osreboot.hvol2.direct.HvlDirect;
-
 import chess.client.ClientMenuManager.MenuState;
 import chess.client.ClientPiece.PieceType;
 import chess.client.ClientPlayer.PlayerColor;
-import chess.common.NetworkUtil;
 import chess.common.Util;
 import chess.common.packet.PacketClientMove;
-import chess.common.packet.PacketCollectivePlayerStatus;
-import chess.common.packet.PacketPlayerStatus;
 
 public class ClientGame {
 
@@ -49,7 +44,6 @@ public class ClientGame {
 
 	private String id;		
 	private boolean debug = false;
-	private PacketCollectivePlayerStatus playerPacket = new PacketCollectivePlayerStatus();
 	private ArrayList<ClientMove> validMoves = new ArrayList<ClientMove>();
 	private int selectedPiecexPos = -1;
 	private int selectedPieceyPos = -1;
@@ -76,7 +70,6 @@ public class ClientGame {
 	}
 
 	public void reset() {
-		playerPacket = new PacketCollectivePlayerStatus();
 		otherPlayers = new HashMap<String, ClientPlayer>();
 		validMoves = new ArrayList<ClientMove>();
 		selectedPiecexPos = -1;
@@ -107,28 +100,15 @@ public class ClientGame {
 			}		
 		}
 		else if(state == GameState.connected) {
-			//Functions as a "Hello" packet for now
-			HvlDirect.writeTCP(NetworkUtil.KEY_PLAYER_STATUS, new PacketPlayerStatus(true));
-			if(HvlDirect.getKeys().contains(NetworkUtil.KEY_COLLECTIVE_PLAYER_STATUS)) {
-				playerPacket = HvlDirect.getValue(NetworkUtil.KEY_COLLECTIVE_PLAYER_STATUS);
-				for (String name : playerPacket.collectivePlayerStatus.keySet()){
-					if(!otherPlayers.containsKey(name)) {
-						if(!id.equals(name)) {
-							otherPlayers.put(name, new ClientPlayer(name));
-						}
-					}
-				}
-			}
-			otherPlayers.keySet().removeIf(p->{
-				return !playerPacket.collectivePlayerStatus.containsKey(p);
-			});	
-
+			ClientNetworkTransfer.writeClientStatusPacket();
+			ClientNetworkTransfer.receiveServerStatusPacket(otherPlayers, id);
+			
 			//Wait for second player before initializing game board
 			if(!boardInitialized) {
 				hvlFont(0).drawc("Connection established. Waiting for opponent...", Display.getWidth()/2, Display.getHeight()/2, Color.white, 1f);
 				hvlFont(0).drawc("ESC to cancel", Display.getWidth()/2, Display.getHeight()/2 + 40, Color.white, 0.7f);
 				//Check if ready packet is received from server...
-				ClientNetworkReceive.waitForOpponentReady(this);				
+				ClientNetworkTransfer.connectToOpponent(this);				
 
 				if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
 					ClientNetworkManager.disconnect();
@@ -145,19 +125,20 @@ public class ClientGame {
 					board.update(delta, player);
 					drawValidMoves();
 
-					if(inCheck) {
-						hvlFont(0).drawc("You are in check!", Display.getWidth()/2+450, Display.getHeight()/2, 1.2f);
-					}else {
-						if(ClientPieceLogic.getCheckState(board, opponent)) {
-							hvlFont(0).drawc("Opponent is in check", Display.getWidth()/2+450, Display.getHeight()/2, 1.2f);
-						}
-					}
+
 
 					//Receive and handle packets sent from the server.
-					ClientNetworkReceive.waitForOpponentMove(this);
+					ClientNetworkTransfer.handleOpponentMove(this);
 
 					//Detect if a piece is clicked, highlight that piece's valid moves (if existing)
 					if(gameEndState == GAME_END_STATE_CONTINUE) {
+						if(inCheck) {
+							hvlFont(0).drawc("You are in check!", Display.getWidth()/2+450, Display.getHeight()/2, 1.2f);
+						}else {
+							if(ClientPieceLogic.getCheckState(board, opponent)) {
+								hvlFont(0).drawc("Opponent is in check", Display.getWidth()/2+450, Display.getHeight()/2, 1.2f);
+							}
+						}						
 						if(playersTurn) {
 							hvlFont(0).drawc("It is your turn", Display.getWidth()/2, Display.getHeight()-20, 1.2f);
 							if(!promotionUI) {
@@ -182,8 +163,6 @@ public class ClientGame {
 											&& Util.getCursorY() >= Util.convertToPixelPositionY(m.y, player) - ClientBoardSpace.SPACE_SIZE/2
 											&& Util.getCursorY() <= Util.convertToPixelPositionY(m.y, player) + ClientBoardSpace.SPACE_SIZE/2)
 											&& Util.leftMouseClick()) {
-
-										//HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE, new PacketClientMove(selectedPiecexPos, selectedPieceyPos, m.x, m.y, id, m.castle, m.enPassant));
 
 										for(ClientPiece p : board.activePieces) {
 											if(p.xPos == selectedPiecexPos && p.yPos == selectedPieceyPos) {					
@@ -267,9 +246,9 @@ public class ClientGame {
 													moveCount++;
 											}					
 											if(escape) {
-												if(!promotionUI) {
-													HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE,
-															new PacketClientMove(selectedPiecexPos, selectedPieceyPos, m.x, m.y, id, m.castle, m.enPassant, PacketClientMove.PAWN_PROMOTION_FALSE));
+												if(!promotionUI) {							
+															ClientNetworkTransfer.writeClientMovePacket(selectedPiecexPos, selectedPieceyPos, m.x, m.y, id,
+																	m.castle, m.enPassant, PacketClientMove.PAWN_PROMOTION_FALSE);
 												}
 												break;
 											}
@@ -278,8 +257,8 @@ public class ClientGame {
 
 									if(escape) {
 										if(!promotionUI) {
-											HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE,
-													new PacketClientMove(selectedPiecexPos, selectedPieceyPos, m.x, m.y, id, m.castle, m.enPassant, PacketClientMove.PAWN_PROMOTION_FALSE));
+											ClientNetworkTransfer.writeClientMovePacket(selectedPiecexPos, selectedPieceyPos, m.x, m.y, id,
+													m.castle, m.enPassant, PacketClientMove.PAWN_PROMOTION_FALSE);
 										}
 										break;
 									}
@@ -290,8 +269,8 @@ public class ClientGame {
 								if(Util.getCursorX() <= Display.getWidth()/2 + 425+55+48 && Util.getCursorX() >= Display.getWidth()/2 + 425+55-48
 										&& Util.getCursorY() <= Display.getHeight()/2+55+48 && Util.getCursorY() >= Display.getHeight()/2+55-48
 										&& Util.leftMouseClick()) {
-									HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE,
-											new PacketClientMove(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id, false, false, PacketClientMove.PAWN_PROMOTION_QUEEN));
+									ClientNetworkTransfer.writeClientMovePacket(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id,
+											false, false, PacketClientMove.PAWN_PROMOTION_QUEEN);
 									board.getPieceAt(promotionX, promotionY).type = PieceType.queen;
 									promotionUI = false;
 									playersTurn = false;
@@ -299,8 +278,8 @@ public class ClientGame {
 								if(Util.getCursorX() <= Display.getWidth()/2 + 425+55+48 && Util.getCursorX() >= Display.getWidth()/2 + 425+55-48
 										&& Util.getCursorY() <= Display.getHeight()/2-55+48 && Util.getCursorY() >= Display.getHeight()/2-55-48
 										&& Util.leftMouseClick()) {
-									HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE,
-											new PacketClientMove(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id, false, false, PacketClientMove.PAWN_PROMOTION_KNIGHT));
+									ClientNetworkTransfer.writeClientMovePacket(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id,
+											false, false, PacketClientMove.PAWN_PROMOTION_KNIGHT);
 									board.getPieceAt(promotionX, promotionY).type = PieceType.knight;
 									promotionUI = false;
 									playersTurn = false;
@@ -308,8 +287,8 @@ public class ClientGame {
 								if(Util.getCursorX() <= Display.getWidth()/2 + 425-55+48 && Util.getCursorX() >= Display.getWidth()/2 + 425-55-48
 										&& Util.getCursorY() <= Display.getHeight()/2+55+48 && Util.getCursorY() >= Display.getHeight()/2+55-48
 										&& Util.leftMouseClick()) {
-									HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE,
-											new PacketClientMove(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id, false, false, PacketClientMove.PAWN_PROMOTION_ROOK));
+									ClientNetworkTransfer.writeClientMovePacket(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id,
+											false, false, PacketClientMove.PAWN_PROMOTION_ROOK);
 									board.getPieceAt(promotionX, promotionY).type = PieceType.rook;
 									promotionUI = false;
 									playersTurn = false;
@@ -317,8 +296,8 @@ public class ClientGame {
 								if(Util.getCursorX() <= Display.getWidth()/2 + 425-55+48 && Util.getCursorX() >= Display.getWidth()/2 + 425-55-48
 										&& Util.getCursorY() <= Display.getHeight()/2-55+48 && Util.getCursorY() >= Display.getHeight()/2-55-48
 										&& Util.leftMouseClick()) {
-									HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE,
-											new PacketClientMove(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id, false, false, PacketClientMove.PAWN_PROMOTION_BISHOP));
+									ClientNetworkTransfer.writeClientMovePacket(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id,
+											false, false, PacketClientMove.PAWN_PROMOTION_BISHOP);
 									board.getPieceAt(promotionX, promotionY).type = PieceType.bishop;
 									promotionUI = false;
 									playersTurn = false;

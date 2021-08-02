@@ -1,5 +1,8 @@
 package chess.client;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import com.osreboot.hvol2.base.anarchy.HvlAgentClientAnarchy;
 import com.osreboot.hvol2.direct.HvlDirect;
 
@@ -9,15 +12,57 @@ import chess.common.NetworkUtil;
 import chess.common.packet.PacketClientGameOver;
 import chess.common.packet.PacketClientGameReady;
 import chess.common.packet.PacketClientMove;
+import chess.common.packet.PacketCollectivePlayerStatus;
+import chess.common.packet.PacketPlayerStatus;
 import chess.common.packet.PacketServerGameReadyResponse;
 import chess.common.packet.PacketServerMoveResponse;
 
-public class ClientNetworkReceive {
+public class ClientNetworkTransfer {
 	
+	public static PacketCollectivePlayerStatus playerPacket;
+	
+	/**
+	 * Writes a move packet to the server.
+	 */
+	public static void writeClientMovePacket(int selectedPieceXArg, int selectedPieceYArg, int intendedMoveXArg,
+			int intendedMoveYArg, String idArg, boolean castleArg, boolean enPassantArg, int promotionArg) {
+		HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_MOVE,
+				new PacketClientMove(selectedPieceXArg, selectedPieceYArg, intendedMoveXArg,
+						intendedMoveYArg, idArg, castleArg, enPassantArg, promotionArg));
+	}
+	
+	/**
+	 * Writes a packet to the server indicating the player is maintaining connection.
+	 */
+	public static void writeClientStatusPacket() {
+		HvlDirect.writeTCP(NetworkUtil.KEY_PLAYER_STATUS, new PacketPlayerStatus(true));
+	}
+	
+	/**
+	 * Receives player connection status packets from the server
+	 */
+	public static void receiveServerStatusPacket(HashMap<String,ClientPlayer> otherPlayersArg, String playerId) {
+		if(HvlDirect.getKeys().contains(NetworkUtil.KEY_COLLECTIVE_PLAYER_STATUS)) {
+			playerPacket = HvlDirect.getValue(NetworkUtil.KEY_COLLECTIVE_PLAYER_STATUS);
+			for (String name : playerPacket.collectivePlayerStatus.keySet()){
+				if(!otherPlayersArg.containsKey(name)) {
+					if(!playerId.equals(name)) {
+						otherPlayersArg.put(name, new ClientPlayer(name));
+					}
+				}
+			}
+		}else {
+			playerPacket = new PacketCollectivePlayerStatus();
+		}
+		otherPlayersArg.keySet().removeIf(p->{
+			return !playerPacket.collectivePlayerStatus.containsKey(p);
+		});	
+	}
+
 	/**
 	 * Receives game ready packet from the server and initializes the game.
 	 */
-	public static void waitForOpponentReady(ClientGame game) {
+	public static void connectToOpponent(ClientGame game) {
 		if(HvlDirect.getKeys().contains(NetworkUtil.KEY_COLLECTIVE_CLIENT_GAME_READY)) {
 			PacketServerGameReadyResponse readyPacket = HvlDirect.getValue(NetworkUtil.KEY_COLLECTIVE_CLIENT_GAME_READY);
 			((HvlAgentClientAnarchy)HvlDirect.getAgent()).getTable().remove(NetworkUtil.KEY_COLLECTIVE_CLIENT_GAME_READY);
@@ -47,21 +92,16 @@ public class ClientNetworkReceive {
 			}
 		}
 	}
-	
+
 	/**
 	 * Receives move packets from the server and modifies the game state.
+	 * If the move ends the game, writes a packet to the server indicating the game has ended.
 	 */
-	public static void waitForOpponentMove(ClientGame game) {
+	public static void handleOpponentMove(ClientGame game) {
 		if(HvlDirect.getKeys().contains(NetworkUtil.KEY_SERVER_MOVE_RESPONSE)) {
 			PacketServerMoveResponse movePacket = HvlDirect.getValue(NetworkUtil.KEY_SERVER_MOVE_RESPONSE);
 			((HvlAgentClientAnarchy)HvlDirect.getAgent()).getTable().remove(NetworkUtil.KEY_SERVER_MOVE_RESPONSE);	
 			if(!movePacket.id.equals(game.player.id)) {
-				System.out.println("Opponent's move received.");					
-				System.out.println("Move packet id: " + movePacket.id);
-				System.out.println("Your id: " + game.player.id);					
-				System.out.println("Attempting to move piece at " + movePacket.packet.existingPieceX + ", " + movePacket.packet.existingPieceY 
-						+ ". This piece is a " + game.board.getPieceAt(movePacket.packet.existingPieceX, movePacket.packet.existingPieceY ).color + " "
-						+ game.board.getPieceAt(movePacket.packet.existingPieceX, movePacket.packet.existingPieceY ).type);
 				for(ClientPiece pc : game.board.activePieces) {
 					if(pc.enPassantVulnerable) pc.enPassantVulnerable = false;
 				}
@@ -77,7 +117,7 @@ public class ClientNetworkReceive {
 								}
 							}														
 						}
-						
+
 						//if the move packet indicates a pawn moved two spaces, set that pawn to enPassantVulnerable
 						if(p.type == PieceType.pawn && (movePacket.packet.intendedMoveY == movePacket.packet.existingPieceY + 2
 								|| movePacket.packet.intendedMoveY == movePacket.packet.existingPieceY - 2)) {
@@ -130,7 +170,7 @@ public class ClientNetworkReceive {
 						if(game.player.color == PlayerColor.black) {
 							game.moveCount++;
 						}
-						
+
 						//if the move packet indicates a pawn needs to be promoted, locate and promote that pawn.
 						if(movePacket.packet.promotionType != PacketClientMove.PAWN_PROMOTION_FALSE) {
 							if(movePacket.packet.promotionType == PacketClientMove.PAWN_PROMOTION_QUEEN) {
@@ -143,7 +183,7 @@ public class ClientNetworkReceive {
 								p.type = PieceType.bishop;
 							}
 						}
-						
+
 						if(!p.moved) p.moved = true;
 						game.inCheck = ClientPieceLogic.getCheckState(game.board, game.player);
 						game.gameEndState = ClientPieceLogic.getGameEndState(game.board, game.player, game.inCheck);
@@ -166,7 +206,7 @@ public class ClientNetworkReceive {
 				}					
 			}
 		}
-		
+
 		if(game.gameEndState == ClientGame.GAME_END_STATE_CONTINUE) {
 			if(HvlDirect.getKeys().contains(NetworkUtil.KEY_SERVER_GAME_OVER_RESPONSE)) {
 				System.out.println("Victory packet received!");
@@ -181,5 +221,5 @@ public class ClientNetworkReceive {
 			}
 		}
 	}
-	
+
 }
