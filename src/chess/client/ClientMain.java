@@ -12,6 +12,9 @@ public class ClientMain extends HvlTemplateI{
 
 	private ClientGame game;
 
+	//Automatic draw when only kings are on the board
+	//50-move rule draw
+	//Vote to draw
 	//Server disconnection
 	//Full server indication
 	//CLEANING

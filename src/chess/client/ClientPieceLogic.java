@@ -93,7 +93,7 @@ public class ClientPieceLogic{
 	}
 
 
-
+	//Returns true if the given player is currently in check on the given board.
 	public static boolean getCheckState(ClientBoard board, ClientPlayer player) {
 		if(player.color == PlayerColor.white) {
 			for(ClientPiece piece : board.activePieces) {
@@ -168,41 +168,43 @@ public class ClientPieceLogic{
 		//Castling moves
 		if(checkTest) {
 			if(!pieceArg.moved) {
-				//White right castle
-				if(pieceArg.color == PieceColor.white) {
-					if(!boardArg.isSpaceFree(7, 7) && boardArg.isSpaceFree(6, 7) && boardArg.isSpaceFree(5, 7)) {
-						if(boardArg.getPieceAt(7, 7).type == PieceType.rook && !boardArg.getPieceAt(7, 7).moved) {
-							if(legalMoveCheck(6, 7, pieceArg, boardArg, player)
-									&& legalMoveCheck(5, 7, pieceArg, boardArg, player)) {
-								moves.add(new ClientMove(6, 7, true, false));
+				if(!getCheckState(boardArg, player)) {
+					//White right castle
+					if(pieceArg.color == PieceColor.white) {
+						if(!boardArg.isSpaceFree(7, 7) && boardArg.isSpaceFree(6, 7) && boardArg.isSpaceFree(5, 7)) {
+							if(boardArg.getPieceAt(7, 7).type == PieceType.rook && !boardArg.getPieceAt(7, 7).moved) {
+								if(legalMoveCheck(6, 7, pieceArg, boardArg, player)
+										&& legalMoveCheck(5, 7, pieceArg, boardArg, player)) {
+									moves.add(new ClientMove(6, 7, true, false));
+								}
 							}
 						}
-					}
-					//White left castle
-					if(!boardArg.isSpaceFree(0, 7) && boardArg.isSpaceFree(1, 7) && boardArg.isSpaceFree(2, 7) && boardArg.isSpaceFree(3, 7)) {
-						if(boardArg.getPieceAt(0, 7).type == PieceType.rook && !boardArg.getPieceAt(0, 7).moved) {
-							if(legalMoveCheck(3, 7, pieceArg, boardArg, player)
-									&& legalMoveCheck(2, 7, pieceArg, boardArg, player)) {
-								moves.add(new ClientMove(2, 7, true, false));
+						//White left castle
+						if(!boardArg.isSpaceFree(0, 7) && boardArg.isSpaceFree(1, 7) && boardArg.isSpaceFree(2, 7) && boardArg.isSpaceFree(3, 7)) {
+							if(boardArg.getPieceAt(0, 7).type == PieceType.rook && !boardArg.getPieceAt(0, 7).moved) {
+								if(legalMoveCheck(3, 7, pieceArg, boardArg, player)
+										&& legalMoveCheck(2, 7, pieceArg, boardArg, player)) {
+									moves.add(new ClientMove(2, 7, true, false));
+								}
 							}
 						}
-					}
-				}else {
-					//black left castle
-					if(!boardArg.isSpaceFree(7, 0) && boardArg.isSpaceFree(5, 0) && boardArg.isSpaceFree(6, 0)) {
-						if(boardArg.getPieceAt(7, 0).type == PieceType.rook && !boardArg.getPieceAt(7, 0).moved) {
-							if(legalMoveCheck(5, 0, pieceArg, boardArg, player)
-									&& legalMoveCheck(6, 0, pieceArg, boardArg, player)) {
-								moves.add(new ClientMove(6, 0, true, false));
+					}else {
+						//black left castle
+						if(!boardArg.isSpaceFree(7, 0) && boardArg.isSpaceFree(5, 0) && boardArg.isSpaceFree(6, 0)) {
+							if(boardArg.getPieceAt(7, 0).type == PieceType.rook && !boardArg.getPieceAt(7, 0).moved) {
+								if(legalMoveCheck(5, 0, pieceArg, boardArg, player)
+										&& legalMoveCheck(6, 0, pieceArg, boardArg, player)) {
+									moves.add(new ClientMove(6, 0, true, false));
+								}
 							}
 						}
-					}
-					//black right castle
-					if(!boardArg.isSpaceFree(0, 0) && boardArg.isSpaceFree(1, 0) && boardArg.isSpaceFree(2, 0) && boardArg.isSpaceFree(3, 0)) {
-						if(boardArg.getPieceAt(0, 0).type == PieceType.rook && !boardArg.getPieceAt(0, 0).moved) {
-							if(legalMoveCheck(3, 0, pieceArg, boardArg, player)
-									&& legalMoveCheck(2, 0, pieceArg, boardArg, player)) {
-								moves.add(new ClientMove(2, 0, true, false));
+						//black right castle
+						if(!boardArg.isSpaceFree(0, 0) && boardArg.isSpaceFree(1, 0) && boardArg.isSpaceFree(2, 0) && boardArg.isSpaceFree(3, 0)) {
+							if(boardArg.getPieceAt(0, 0).type == PieceType.rook && !boardArg.getPieceAt(0, 0).moved) {
+								if(legalMoveCheck(3, 0, pieceArg, boardArg, player)
+										&& legalMoveCheck(2, 0, pieceArg, boardArg, player)) {
+									moves.add(new ClientMove(2, 0, true, false));
+								}
 							}
 						}
 					}
@@ -429,7 +431,7 @@ public class ClientPieceLogic{
 					}
 				}
 			}
-			
+
 			//Advancing moves
 			if(pieceArg.yPos == 1) {
 				if(boardArg.isSpaceFree(pieceArg.xPos, pieceArg.yPos+1)) {

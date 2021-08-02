@@ -22,12 +22,19 @@ public class ClientPiece {
 	//First just get valid moves working regardless of player order or turn
 
 	enum PieceType{
-		pawn,
-		knight,
-		rook,
-		bishop,
-		queen,
-		king;
+		pawn(ClientLoader.INDEX_PAWN_BLACK, ClientLoader.INDEX_PAWN_WHITE),
+		knight(ClientLoader.INDEX_KNIGHT_BLACK, ClientLoader.INDEX_KNIGHT_WHITE),
+		rook(ClientLoader.INDEX_ROOK_BLACK, ClientLoader.INDEX_ROOK_WHITE),
+		bishop(ClientLoader.INDEX_BISHOP_BLACK, ClientLoader.INDEX_BISHOP_WHITE),
+		queen(ClientLoader.INDEX_QUEEN_BLACK, ClientLoader.INDEX_QUEEN_WHITE),
+		king(ClientLoader.INDEX_KING_BLACK, ClientLoader.INDEX_KING_WHITE);
+
+		final int blackTexture, whiteTexture;
+
+		PieceType(int blackTextureArg, int whiteTextureArg){
+			blackTexture = blackTextureArg;
+			whiteTexture = whiteTextureArg;
+		}
 	}
 
 	enum PieceColor{
@@ -68,85 +75,18 @@ public class ClientPiece {
 	}
 
 	public void draw(ClientPlayer p) {
-
 		if(p.color == PlayerColor.white) {
-			if(this.type == PieceType.pawn) {
-				if(this.color == PieceColor.white) {
-					hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_PAWN_WHITE));
-				}else {
-					hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_PAWN_BLACK));
-				}
-			}else if(this.type == PieceType.rook) {
-				if(this.color == PieceColor.white) {
-					hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_ROOK_WHITE));
-				}else {
-					hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_ROOK_BLACK));
-				}
-			}else if(this.type == PieceType.knight) {
-				if(this.color == PieceColor.white) {
-					hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_KNIGHT_WHITE));
-				}else {
-					hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_KNIGHT_BLACK));
-				}
-			}else if(this.type == PieceType.bishop) {
-				if(this.color == PieceColor.white) {
-					hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_BISHOP_WHITE));
-				}else {
-					hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_BISHOP_BLACK));
-				}
-			}else if(this.type == PieceType.queen) {
-				if(this.color == PieceColor.white) {
-					hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_QUEEN_WHITE));
-				}else {
-					hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_QUEEN_BLACK));
-				}
-			}else if(this.type == PieceType.king) {
-				if(this.color == PieceColor.white) {
-					hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_KING_WHITE));
-				}else {
-					hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_KING_BLACK));
-				}
+			if(this.color == PieceColor.white) {
+				hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(this.type.whiteTexture));
+			}else {
+				hvlDraw(hvlQuadc(this.getPixelPositionWhitePerspective().x, this.getPixelPositionWhitePerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(this.type.blackTexture));
 			}
-
 		}else if(p.color == PlayerColor.black) {
-			if(this.type == PieceType.pawn) {
-				if(this.color == PieceColor.white) {
-					hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_PAWN_WHITE));
-				}else {
-					hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_PAWN_BLACK));
-				}
-			}else if(this.type == PieceType.rook) {
-				if(this.color == PieceColor.white) {
-					hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_ROOK_WHITE));
-				}else {
-					hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_ROOK_BLACK));
-				}
-			}else if(this.type == PieceType.knight) {
-				if(this.color == PieceColor.white) {
-					hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_KNIGHT_WHITE));
-				}else {
-					hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_KNIGHT_BLACK));
-				}
-			}else if(this.type == PieceType.bishop) {
-				if(this.color == PieceColor.white) {
-					hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_BISHOP_WHITE));
-				}else {
-					hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_BISHOP_BLACK));
-				}
-			}else if(this.type == PieceType.queen) {
-				if(this.color == PieceColor.white) {
-					hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_QUEEN_WHITE));
-				}else {
-					hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_QUEEN_BLACK));
-				}
-			}else if(this.type == PieceType.king) {
-				if(this.color == PieceColor.white) {
-					hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_KING_WHITE));
-				}else {
-					hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(ClientLoader.INDEX_KING_BLACK));
-				}
-			}			
+			if(this.color == PieceColor.white) {
+				hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(this.type.whiteTexture));
+			}else {
+				hvlDraw(hvlQuadc(this.getPixelPositionBlackPerspective().x, this.getPixelPositionBlackPerspective().y, PIECE_SIZE, PIECE_SIZE), hvlTexture(this.type.blackTexture));
+			}
 		}
 	}
-
 }
