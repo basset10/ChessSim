@@ -127,6 +127,9 @@ public class ClientNetworkReceive {
 						//Move the piece to its intended position
 						p.xPos = movePacket.packet.intendedMoveX;
 						p.yPos = movePacket.packet.intendedMoveY;
+						if(game.player.color == PlayerColor.black) {
+							game.moveCount++;
+						}
 						
 						//if the move packet indicates a pawn needs to be promoted, locate and promote that pawn.
 						if(movePacket.packet.promotionType != PacketClientMove.PAWN_PROMOTION_FALSE) {

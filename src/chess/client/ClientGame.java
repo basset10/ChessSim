@@ -45,6 +45,7 @@ public class ClientGame {
 	public ClientPlayer opponent;
 	public HashMap<String, ClientPlayer> otherPlayers = new HashMap<String, ClientPlayer>();
 	public boolean boardInitialized = false;
+	public int moveCount = 0;
 
 	private String id;		
 	private boolean debug = false;
@@ -53,7 +54,6 @@ public class ClientGame {
 	private int selectedPiecexPos = -1;
 	private int selectedPieceyPos = -1;
 	//private boolean normalInput = true;			
-	private int moveCount = 0;
 	private boolean promotionUI = false;
 	private int promotionX = -1;
 	private int promotionY = -1;
@@ -203,18 +203,19 @@ public class ClientGame {
 												if(inCheck) {
 													inCheck = false;
 												}
-												//If the move is a promotion, upgrade the pawn.
-												if(p.yPos == 7 && p.type==PieceType.pawn) {
-													promotionUI = true;
-													validMoves.clear();
-													escape = true;
-													moveCount++;
-													promotionX = p.xPos;
-													promotionY = p.yPos;
-												}
 
-												//If the move is en passant, detect and remove the appropriate pawn.
-												if(player.color == PlayerColor.black) {
+
+
+												if(player.color == PlayerColor.black) {												
+													//If the move is a promotion, upgrade the pawn.
+													if(p.yPos == 7 && p.type==PieceType.pawn) {
+														promotionUI = true;
+														validMoves.clear();
+														escape = true;
+														promotionX = p.xPos;
+														promotionY = p.yPos;
+													}
+													//If the move is en passant, detect and remove the appropriate pawn.
 													if(m.enPassant) {
 														for(int i = 0; i < board.activePieces.size(); i++) {
 															if(board.activePieces.get(i).xPos == m.x && board.activePieces.get(i).yPos == m.y-1) {
@@ -233,6 +234,13 @@ public class ClientGame {
 														}
 													}
 												}else {
+													if(p.yPos == 0 && p.type==PieceType.pawn) {
+														promotionUI = true;
+														validMoves.clear();
+														escape = true;
+														promotionX = p.xPos;
+														promotionY = p.yPos;
+													}
 													if(m.enPassant) {
 														for(int i = 0; i < board.activePieces.size(); i++) {
 															if(board.activePieces.get(i).xPos == m.x && board.activePieces.get(i).yPos == m.y+1) {
@@ -255,7 +263,8 @@ public class ClientGame {
 												validMoves.clear();
 												escape = true;
 												if(!promotionUI) playersTurn = false;
-												moveCount++;
+												if(player.color == PlayerColor.white)
+													moveCount++;
 											}					
 											if(escape) {
 												if(!promotionUI) {
@@ -314,24 +323,15 @@ public class ClientGame {
 									promotionUI = false;
 									playersTurn = false;
 								}
-
 							}
 						}else {
 							hvlFont(0).drawc("Waiting for opponent", Display.getWidth()/2, Display.getHeight()-20, 1.2f);
 						}
 					}else {
 						if(gameEndState == GAME_END_STATE_CHECKMATE) {
-							if(player.color == PlayerColor.black && finalMove == PlayerColor.white) {
-								hvlFont(0).drawc("GG! Checkmate by " + finalMove.toString() + " in " + (moveCount+1) + " moves.", Display.getWidth()/2, Display.getHeight()-20, 1.2f);
-							}else {
-								hvlFont(0).drawc("GG! Checkmate by " + finalMove.toString() + " in " + moveCount + " moves.", Display.getWidth()/2, Display.getHeight()-20, 1.2f);
-							}
+							hvlFont(0).drawc("GG! Checkmate by " + finalMove.toString() + " in " + moveCount + " moves.", Display.getWidth()/2, Display.getHeight()-20, 1.2f);					
 						}else {
-							if(player.color == PlayerColor.black && finalMove == PlayerColor.white) {
-								hvlFont(0).drawc("Stalemate in " + (moveCount+1) + " moves.", Display.getWidth()/2, Display.getHeight()-20, 1.2f);
-							}else {
-								hvlFont(0).drawc("Stalemate in " + moveCount + " moves.", Display.getWidth()/2, Display.getHeight()-20, 1.2f);
-							}
+							hvlFont(0).drawc("Stalemate in " + moveCount + " moves.", Display.getWidth()/2, Display.getHeight()-20, 1.2f);
 						}
 					}
 				}
