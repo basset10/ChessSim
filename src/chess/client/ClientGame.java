@@ -5,6 +5,7 @@ import static com.osreboot.ridhvl2.HvlStatics.hvlDraw;
 import static com.osreboot.ridhvl2.HvlStatics.hvlLine;
 import static com.osreboot.ridhvl2.HvlStatics.hvlFont;
 import static com.osreboot.ridhvl2.HvlStatics.hvlQuadc;
+import static com.osreboot.ridhvl2.HvlStatics.hvlCirclec;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import org.newdawn.slick.Color;
 
 import com.osreboot.hvol2.direct.HvlDirect;
 import com.osreboot.hvol2.direct.HvlDirect.HvlAgentStatus;
+import com.osreboot.ridhvl2.painter.HvlCircle;
 
 import chess.client.ClientPiece.PieceType;
 import chess.client.ClientPlayer.PlayerColor;
@@ -70,7 +72,8 @@ public class ClientGame {
 
 	public void drawValidMoves() {
 		for(ClientMove m : validMoves) {
-			hvlDraw(hvlQuadc(Util.convertToPixelPositionX(m.x, player), Util.convertToPixelPositionY(m.y, player), 10, 10), hvlColor(0f, 1f, 0f));
+			//hvlDraw(hvlQuadc(Util.convertToPixelPositionX(m.x, player), Util.convertToPixelPositionY(m.y, player), 10, 10), hvlColor(0f, 1f, 0f));
+			hvlDraw(hvlCirclec(Util.convertToPixelPositionX(m.x, player), Util.convertToPixelPositionY(m.y, player),10), hvlColor(.1f, .1f, .1f, .6f));
 		}
 	}
 

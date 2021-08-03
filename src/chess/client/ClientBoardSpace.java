@@ -34,9 +34,9 @@ public class ClientBoardSpace {
 	
 	public void draw() {
 		if(this.color == Color.BLACK) {
-			hvlDraw(hvlQuadc(this.getPixelPosition().x, this.getPixelPosition().y, SPACE_SIZE, SPACE_SIZE), hvlColor(0.15f, 0.15f, 0.15f));
+			hvlDraw(hvlQuadc(this.getPixelPosition().x, this.getPixelPosition().y, SPACE_SIZE, SPACE_SIZE), hvlColor(0.25f, 0.35f, 0.25f));
 		}else if(this.color == Color.WHITE) {
-			hvlDraw(hvlQuadc(this.getPixelPosition().x, this.getPixelPosition().y, SPACE_SIZE, SPACE_SIZE), hvlColor(0.9f, 0.9f, 0.9f));
+			hvlDraw(hvlQuadc(this.getPixelPosition().x, this.getPixelPosition().y, SPACE_SIZE, SPACE_SIZE), hvlColor(0.8f, 0.8f, 0.8f));
 		}
 	}
 	
