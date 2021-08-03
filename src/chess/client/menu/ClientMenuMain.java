@@ -14,6 +14,7 @@ import chess.client.ClientGame.GameState;
 public class ClientMenuMain {
 
 	private ArrayList<ClientButton> buttons;
+	//private String text = "lol";
 	
 	public ClientMenuMain(ClientGame game) {
 		buttons = new ArrayList<ClientButton>();
@@ -28,7 +29,7 @@ public class ClientMenuMain {
 	}
 	
 	public void operate() {
-		hvlFont(0).drawc("Main Menu", Display.getWidth()/2, Display.getHeight()/2-100, Color.white, 3f);
+		hvlFont(0).drawc("Chess Sim", Display.getWidth()/2, Display.getHeight()/2-100, Color.white, 4f);
 		for(ClientButton b : buttons) {
 			b.operate();
 		}
