@@ -2,20 +2,28 @@ package chess.client;
 
 import static com.osreboot.ridhvl2.HvlStatics.hvlDraw;
 import static com.osreboot.ridhvl2.HvlStatics.hvlQuadc;
+import static com.osreboot.ridhvl2.HvlStatics.hvlLine;
 import static com.osreboot.ridhvl2.HvlStatics.hvlTexture;
+import static com.osreboot.ridhvl2.HvlStatics.hvlTranslate;
 
 import java.util.ArrayList;
 
 import org.lwjgl.opengl.Display;
+import org.newdawn.slick.Color;
 
 import com.osreboot.ridhvl2.HvlCoord;
+import com.osreboot.ridhvl2.HvlMath;
 
 import chess.client.ClientPlayer.PlayerColor;
+import chess.common.Util;
 
 public class ClientPiece {
 
 	public static final int PIECE_SIZE = 50;
+	public static final float TRANSLATION_SPEED = 500f;
+
 	public boolean moved = false;
+	public boolean inMotion = false;
 
 	enum PieceType{
 		pawn(ClientLoader.INDEX_PAWN_BLACK, ClientLoader.INDEX_PAWN_WHITE),
@@ -40,6 +48,12 @@ public class ClientPiece {
 
 	public int xPos;
 	public int yPos;
+	public int translationMemoryX;
+	public int translationMemoryY;
+	public float horizontalTravel;
+	public float verticalTravel;
+	public boolean positiveHorizontalTravel;
+	public boolean positiveVerticalTravel;
 	public PieceType type;
 	public PieceColor color;
 	public boolean enPassantVulnerable = false;
@@ -73,10 +87,122 @@ public class ClientPiece {
 	}
 
 	public void draw(ClientPlayer p) {
-		if(color == PieceColor.black) {
-			hvlDraw(hvlQuadc(getPixelPosition(p).x, getPixelPosition(p).y, PIECE_SIZE, PIECE_SIZE), hvlTexture(type.blackTexture));
+		if(!inMotion) {
+			if(color == PieceColor.black) {
+				hvlDraw(hvlQuadc(getPixelPosition(p).x, getPixelPosition(p).y, PIECE_SIZE, PIECE_SIZE), hvlTexture(type.blackTexture));
+			}else {
+				hvlDraw(hvlQuadc(getPixelPosition(p).x, getPixelPosition(p).y, PIECE_SIZE, PIECE_SIZE), hvlTexture(type.whiteTexture));
+			}
+		}
+	}
+
+	public void translateToNewLocation(int xArg, int yArg, ClientPlayer player, ClientGame g) {
+		inMotion = true;
+		horizontalTravel = (Util.convertToPixelPositionX(xPos, player) - Util.convertToPixelPositionX(xArg, player));
+		verticalTravel = (Util.convertToPixelPositionX(yPos, player) - Util.convertToPixelPositionX(yArg, player));
+		translationMemoryX = xPos;
+		translationMemoryY = yPos;
+		xPos = xArg;
+		yPos = yArg;
+
+		if(horizontalTravel >= 0) {
+			positiveHorizontalTravel = true;
 		}else {
-			hvlDraw(hvlQuadc(getPixelPosition(p).x, getPixelPosition(p).y, PIECE_SIZE, PIECE_SIZE), hvlTexture(type.whiteTexture));
+			positiveHorizontalTravel = false;
+		}
+		if(verticalTravel >= 0) {
+			positiveVerticalTravel = true;
+		}else {
+			positiveVerticalTravel = false;
+		}	
+
+		if(player.color != g.player.color) {
+			horizontalTravel = -horizontalTravel;
+			verticalTravel = -verticalTravel;
+			positiveVerticalTravel = !positiveVerticalTravel;
+			positiveHorizontalTravel = !positiveHorizontalTravel;
+		}
+
+	}
+
+	public void drawTranslation(ClientPlayer p, float delta, ClientGame g) {
+
+		if(p.color == g.player.color) {
+			if(color == PieceColor.black) {
+				hvlDraw(hvlQuadc((getPixelPosition(p).x + horizontalTravel), (getPixelPosition(p).y + verticalTravel), PIECE_SIZE, PIECE_SIZE), hvlTexture(type.blackTexture));
+			}else {
+				hvlDraw(hvlQuadc(getPixelPosition(p).x + horizontalTravel, getPixelPosition(p).y + verticalTravel, PIECE_SIZE, PIECE_SIZE), hvlTexture(type.whiteTexture));
+			}
+		}else {
+			if(color == PieceColor.black) {
+				hvlDraw(hvlQuadc((getPixelPosition(p).x - horizontalTravel), (getPixelPosition(p).y - verticalTravel), PIECE_SIZE, PIECE_SIZE), hvlTexture(type.blackTexture));
+			}else {
+				hvlDraw(hvlQuadc(getPixelPosition(p).x - horizontalTravel, getPixelPosition(p).y - verticalTravel, PIECE_SIZE, PIECE_SIZE), hvlTexture(type.whiteTexture));
+			}
+		}
+		if(!(type == ClientPiece.PieceType.knight)) {
+			if(positiveHorizontalTravel) {
+				if(horizontalTravel > 0) {
+					horizontalTravel -= delta*TRANSLATION_SPEED;
+				}else {
+					horizontalTravel = 0;
+				}
+			}else {
+				if(horizontalTravel < 0) {
+					horizontalTravel += delta*TRANSLATION_SPEED;
+				}else {
+					horizontalTravel = 0;
+				}			
+			}
+			if(positiveVerticalTravel) {
+				if(verticalTravel > 0) {
+					verticalTravel -= delta*TRANSLATION_SPEED;
+				}else {
+					verticalTravel = 0;
+				}
+			}else {
+				if(verticalTravel < 0) {
+					verticalTravel += delta*TRANSLATION_SPEED;
+				}else {
+					verticalTravel = 0;
+				}			
+			}
+			if(horizontalTravel == 0 && verticalTravel == 0) {
+				inMotion = false;
+			}
+		}else {
+			if(positiveHorizontalTravel) {
+				if(horizontalTravel > 0) {
+					horizontalTravel -= delta*TRANSLATION_SPEED;
+				}else {
+					horizontalTravel = 0;
+				}
+			}else {
+				if(horizontalTravel < 0) {
+					horizontalTravel += delta*TRANSLATION_SPEED;
+				}else {
+					horizontalTravel = 0;
+				}			
+			}
+
+			if(horizontalTravel == 0) {
+				if(positiveVerticalTravel) {
+					if(verticalTravel > 0) {
+						verticalTravel -= delta*TRANSLATION_SPEED;
+					}else {
+						verticalTravel = 0;
+					}
+				}else {
+					if(verticalTravel < 0) {
+						verticalTravel += delta*TRANSLATION_SPEED;
+					}else {
+						verticalTravel = 0;
+					}			
+				}
+				if(verticalTravel == 0) {
+					inMotion = false;
+				}
+			}
 		}
 	}
 }

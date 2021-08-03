@@ -165,8 +165,9 @@ public class ClientNetworkTransfer {
 						}
 
 						//Move the piece to its intended position
-						p.xPos = movePacket.packet.intendedMoveX;
-						p.yPos = movePacket.packet.intendedMoveY;
+						p.translateToNewLocation(movePacket.packet.intendedMoveX, movePacket.packet.intendedMoveY, game.opponent, game);
+						//p.xPos = movePacket.packet.intendedMoveX;
+						//p.yPos = movePacket.packet.intendedMoveY;
 						if(game.player.color == PlayerColor.black) {
 							game.moveCount++;
 						}

@@ -2,6 +2,7 @@ package chess.client;
 
 import static com.osreboot.ridhvl2.HvlStatics.hvlColor;
 import static com.osreboot.ridhvl2.HvlStatics.hvlDraw;
+import static com.osreboot.ridhvl2.HvlStatics.hvlLine;
 import static com.osreboot.ridhvl2.HvlStatics.hvlFont;
 import static com.osreboot.ridhvl2.HvlStatics.hvlQuadc;
 
@@ -124,8 +125,12 @@ public class ClientGame {
 				}else {
 					board.update(delta, player);
 					drawValidMoves();
-
-
+					for(ClientPiece p : board.activePieces) {
+						if(p.inMotion) {							
+							p.drawTranslation(player, delta, this);							
+						}
+					}
+					
 
 					//Receive and handle packets sent from the server.
 					ClientNetworkTransfer.handleOpponentMove(this);
@@ -177,8 +182,10 @@ public class ClientGame {
 													}														
 												}						
 												//Move piece to new square
-												p.xPos = m.x;
-												p.yPos = m.y;
+												//p.xPos = m.x;
+												//p.yPos = m.y;
+												p.translateToNewLocation(m.x, m.y, player, this);
+												//p.inMotion = true;
 												if(inCheck) {
 													inCheck = false;
 												}
