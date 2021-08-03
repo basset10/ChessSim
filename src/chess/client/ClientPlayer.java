@@ -3,9 +3,9 @@ package chess.client;
 public class ClientPlayer {
 	
 	public enum PlayerColor{
-		none,
-		white,
-		black;
+		NONE,
+		WHITE,
+		BLACK;
 	}
 
 	public String id;
@@ -13,7 +13,7 @@ public class ClientPlayer {
 	
 	public ClientPlayer(String idArg) {
 		id = idArg;
-		color = PlayerColor.none;
+		color = PlayerColor.NONE;
 	}
 	
 }

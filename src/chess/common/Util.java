@@ -21,7 +21,7 @@ public class Util {
 	}
 
 	public static float convertToPixelPositionX(int xArg, ClientPlayer p) {
-		if(p.color == ClientPlayer.PlayerColor.white) {
+		if(p.color == ClientPlayer.PlayerColor.WHITE) {
 			return ((xArg)*ClientBoardSpace.SPACE_SIZE + Display.getWidth()/2 - ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2));
 		}else {
 			return (xArg)*-ClientBoardSpace.SPACE_SIZE + Display.getWidth()/2 + ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2);
@@ -29,7 +29,7 @@ public class Util {
 	}
 
 	public static float convertToPixelPositionY(int yArg, ClientPlayer p) {
-		if(p.color == ClientPlayer.PlayerColor.white) {
+		if(p.color == ClientPlayer.PlayerColor.WHITE) {
 			return (yArg)*ClientBoardSpace.SPACE_SIZE + Display.getHeight()/2 - ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2);
 		}else {
 			return (yArg)*-ClientBoardSpace.SPACE_SIZE + Display.getHeight()/2 + ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2);

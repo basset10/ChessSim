@@ -5,6 +5,7 @@ import com.osreboot.ridhvl2.template.HvlChronology;
 import com.osreboot.ridhvl2.template.HvlDisplayWindowed;
 import com.osreboot.ridhvl2.template.HvlTemplateI;
 
+import chess.client.menu.ClientMenuManager;
 import chess.common.Util;
 
 public class ClientMain extends HvlTemplateI{
@@ -14,7 +15,6 @@ public class ClientMain extends HvlTemplateI{
 	//Automatic draw when only kings are on the board
 	//50-move rule draw
 	//Vote to draw
-	//Server disconnection
 	//Full server indication
 	//CLEANING
 	//extras?
@@ -38,6 +38,7 @@ public class ClientMain extends HvlTemplateI{
 		ClientLoader.loadTextures();
 		ClientNetworkManager.initialize();
 		game = new ClientGame(ClientNetworkManager.id);
+		ClientMenuManager.initialize(game);
 	}
 
 	@Override

@@ -7,7 +7,7 @@ import com.osreboot.hvol2.base.HvlGameInfo;
 public class NetworkUtil {
 
 	public static final HvlGameInfo GAME_INFO = new HvlGameInfo("chess_sim", "1.0");
-	public static final int TICK_RATE = 32;
+	public static final int TICK_RATE = 16;
 	public static final int SERVER_HOST_PORT = 25565;
 	
 	public static String generateUUID() {

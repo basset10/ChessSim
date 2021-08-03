@@ -39,9 +39,9 @@ public class ClientPieceLogic{
 
 	public static int getGameEndState(ClientBoard board, ClientPlayer player, boolean checkStateArg) {
 		if(checkStateArg) {
-			if(player.color == PlayerColor.white) {
+			if(player.color == PlayerColor.WHITE) {
 				for(ClientPiece piece : board.activePieces) {
-					if(piece.color == PieceColor.white) {						
+					if(piece.color == PieceColor.WHITE) {						
 						ArrayList<ClientMove> moveHolder = piece.getAllValidMoves(board, player);
 						if(moveHolder.size() > 0) {
 							return ClientGame.GAME_END_STATE_CONTINUE;
@@ -50,9 +50,9 @@ public class ClientPieceLogic{
 				}
 				return ClientGame.GAME_END_STATE_CHECKMATE;
 			}
-			else if(player.color == PlayerColor.black) {
+			else if(player.color == PlayerColor.BLACK) {
 				for(ClientPiece piece : board.activePieces) {
-					if(piece.color == PieceColor.black) {
+					if(piece.color == PieceColor.BLACK) {
 						ArrayList<ClientMove> moveHolder = piece.getAllValidMoves(board, player);
 						if(moveHolder.size() > 0) {
 							return ClientGame.GAME_END_STATE_CONTINUE;
@@ -64,9 +64,9 @@ public class ClientPieceLogic{
 				return ClientGame.GAME_END_STATE_CONTINUE;
 			}
 		}else {
-			if(player.color == PlayerColor.white) {
+			if(player.color == PlayerColor.WHITE) {
 				for(ClientPiece piece : board.activePieces) {
-					if(piece.color == PieceColor.white) {						
+					if(piece.color == PieceColor.WHITE) {						
 						ArrayList<ClientMove> moveHolder = piece.getAllValidMoves(board, player);
 						if(moveHolder.size() > 0) {
 							return ClientGame.GAME_END_STATE_CONTINUE;
@@ -75,9 +75,9 @@ public class ClientPieceLogic{
 				}
 				return ClientGame.GAME_END_STATE_STALEMATE;
 			}
-			else if(player.color == PlayerColor.black) {
+			else if(player.color == PlayerColor.BLACK) {
 				for(ClientPiece piece : board.activePieces) {
-					if(piece.color == PieceColor.black) {
+					if(piece.color == PieceColor.BLACK) {
 						ArrayList<ClientMove> moveHolder = piece.getAllValidMoves(board, player);
 						if(moveHolder.size() > 0) {
 							return ClientGame.GAME_END_STATE_CONTINUE;
@@ -94,13 +94,13 @@ public class ClientPieceLogic{
 
 	//Returns true if the given player is currently in check on the given board.
 	public static boolean getCheckState(ClientBoard board, ClientPlayer player) {
-		if(player.color == PlayerColor.white) {
+		if(player.color == PlayerColor.WHITE) {
 			for(ClientPiece piece : board.activePieces) {
-				if(piece.color == PieceColor.black) {
+				if(piece.color == PieceColor.BLACK) {
 					//System.out.println("Checking " + piece.color + " " + piece.type + " for check...");
 					for(ClientMove c : getAllValidMoves(piece, board, player, false)){				
 						for(ClientPiece cp : board.activePieces) {
-							if(cp.color == PieceColor.white && cp.type == PieceType.king && cp.xPos == c.x && cp.yPos == c.y) {
+							if(cp.color == PieceColor.WHITE && cp.type == PieceType.KING && cp.xPos == c.x && cp.yPos == c.y) {
 								//Check if this square can be safely captured...
 
 								//System.out.println(piece.color + " " + piece.type + " has a valid move on " + c.x + ", " + c.y);
@@ -113,13 +113,13 @@ public class ClientPieceLogic{
 				}
 			}
 			//System.out.println("King is not in check");
-		}else if(player.color == PlayerColor.black) {
+		}else if(player.color == PlayerColor.BLACK) {
 			for(ClientPiece piece : board.activePieces) {
-				if(piece.color == PieceColor.white) {
+				if(piece.color == PieceColor.WHITE) {
 					//System.out.println("Checking " + piece.color + " " + piece.type + " for check...");
 					for(ClientMove c : getAllValidMoves(piece, board, player, false)){						
 						for(ClientPiece cp : board.activePieces) {
-							if(cp.color == PieceColor.black && cp.type == PieceType.king && cp.xPos == c.x && cp.yPos == c.y) {
+							if(cp.color == PieceColor.BLACK && cp.type == PieceType.KING && cp.xPos == c.x && cp.yPos == c.y) {
 								//Check if this square can be safely captured...
 
 								//System.out.println(piece.color + " " + piece.type + " has a valid move on " + c.x + ", " + c.y);
@@ -142,17 +142,17 @@ public class ClientPieceLogic{
 	 */
 	public static ArrayList<ClientMove> getAllValidMoves(ClientPiece pieceArg, ClientBoard boardArg, ClientPlayer player, boolean checkTest){
 		ArrayList<ClientMove> moves = new ArrayList<ClientMove>();
-		if(pieceArg.type == PieceType.pawn) {
+		if(pieceArg.type == PieceType.PAWN) {
 			moves = pawnMoveCheck(pieceArg, boardArg, player, checkTest);
-		}else if(pieceArg.type == PieceType.knight) {
+		}else if(pieceArg.type == PieceType.KNIGHT) {
 			moves = knightMoveCheck(pieceArg, boardArg, player, checkTest);
-		}else if(pieceArg.type == PieceType.rook) {
+		}else if(pieceArg.type == PieceType.ROOK) {
 			moves = rookMoveCheck(pieceArg, boardArg, player, checkTest);
-		}else if(pieceArg.type == PieceType.bishop) {
+		}else if(pieceArg.type == PieceType.BISHOP) {
 			moves = bishopMoveCheck(pieceArg, boardArg, player, checkTest);
-		}else if(pieceArg.type == PieceType.queen) {
+		}else if(pieceArg.type == PieceType.QUEEN) {
 			moves = queenMoveCheck(pieceArg, boardArg, player, checkTest);
-		}else if(pieceArg.type == PieceType.king) {
+		}else if(pieceArg.type == PieceType.KING) {
 			moves = kingMoveCheck(pieceArg, boardArg, player, checkTest);
 		}
 		return moves;
@@ -169,9 +169,9 @@ public class ClientPieceLogic{
 			if(!pieceArg.moved) {
 				if(!getCheckState(boardArg, player)) {
 					//White right castle
-					if(pieceArg.color == PieceColor.white) {
+					if(pieceArg.color == PieceColor.WHITE) {
 						if(!boardArg.isSpaceFree(7, 7) && boardArg.isSpaceFree(6, 7) && boardArg.isSpaceFree(5, 7)) {
-							if(boardArg.getPieceAt(7, 7).type == PieceType.rook && !boardArg.getPieceAt(7, 7).moved) {
+							if(boardArg.getPieceAt(7, 7).type == PieceType.ROOK && !boardArg.getPieceAt(7, 7).moved) {
 								if(legalMoveCheck(6, 7, pieceArg, boardArg, player)
 										&& legalMoveCheck(5, 7, pieceArg, boardArg, player)) {
 									moves.add(new ClientMove(6, 7, true, false));
@@ -180,7 +180,7 @@ public class ClientPieceLogic{
 						}
 						//White left castle
 						if(!boardArg.isSpaceFree(0, 7) && boardArg.isSpaceFree(1, 7) && boardArg.isSpaceFree(2, 7) && boardArg.isSpaceFree(3, 7)) {
-							if(boardArg.getPieceAt(0, 7).type == PieceType.rook && !boardArg.getPieceAt(0, 7).moved) {
+							if(boardArg.getPieceAt(0, 7).type == PieceType.ROOK && !boardArg.getPieceAt(0, 7).moved) {
 								if(legalMoveCheck(3, 7, pieceArg, boardArg, player)
 										&& legalMoveCheck(2, 7, pieceArg, boardArg, player)) {
 									moves.add(new ClientMove(2, 7, true, false));
@@ -190,7 +190,7 @@ public class ClientPieceLogic{
 					}else {
 						//black left castle
 						if(!boardArg.isSpaceFree(7, 0) && boardArg.isSpaceFree(5, 0) && boardArg.isSpaceFree(6, 0)) {
-							if(boardArg.getPieceAt(7, 0).type == PieceType.rook && !boardArg.getPieceAt(7, 0).moved) {
+							if(boardArg.getPieceAt(7, 0).type == PieceType.ROOK && !boardArg.getPieceAt(7, 0).moved) {
 								if(legalMoveCheck(5, 0, pieceArg, boardArg, player)
 										&& legalMoveCheck(6, 0, pieceArg, boardArg, player)) {
 									moves.add(new ClientMove(6, 0, true, false));
@@ -199,7 +199,7 @@ public class ClientPieceLogic{
 						}
 						//black right castle
 						if(!boardArg.isSpaceFree(0, 0) && boardArg.isSpaceFree(1, 0) && boardArg.isSpaceFree(2, 0) && boardArg.isSpaceFree(3, 0)) {
-							if(boardArg.getPieceAt(0, 0).type == PieceType.rook && !boardArg.getPieceAt(0, 0).moved) {
+							if(boardArg.getPieceAt(0, 0).type == PieceType.ROOK && !boardArg.getPieceAt(0, 0).moved) {
 								if(legalMoveCheck(3, 0, pieceArg, boardArg, player)
 										&& legalMoveCheck(2, 0, pieceArg, boardArg, player)) {
 									moves.add(new ClientMove(2, 0, true, false));
@@ -331,7 +331,7 @@ public class ClientPieceLogic{
 		//TODO promotion
 		ArrayList<ClientMove> moves = new ArrayList<ClientMove>();
 
-		if(pieceArg.color == PieceColor.white) {
+		if(pieceArg.color == PieceColor.WHITE) {
 
 			//En passant moves
 			if(pieceArg.yPos == 3) {
@@ -400,7 +400,7 @@ public class ClientPieceLogic{
 			if(pieceArg.xPos - 1 >= 0 && pieceArg.yPos-1 >= 0) {
 				pawnAttackCheck(pieceArg.xPos-1, pieceArg.yPos-1, moves, pieceArg, boardArg, player, checkTest);		
 			}
-		} else if(pieceArg.color == PieceColor.black) {
+		} else if(pieceArg.color == PieceColor.BLACK) {
 			//En passant moves
 			if(pieceArg.yPos == 4) {
 				//Left en passant check

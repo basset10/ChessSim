@@ -69,19 +69,19 @@ public class ClientNetworkTransfer {
 			for (String name : readyPacket.collectiveClientGameReady.keySet()){
 				if(name.equals(game.player.id)) {
 					if(readyPacket.isWhite) {
-						game.player.color = PlayerColor.white;
+						game.player.color = PlayerColor.WHITE;
 						game.playersTurn = true;
 					}else {
-						game.player.color = PlayerColor.black;
+						game.player.color = PlayerColor.BLACK;
 					}
 					game.board = new ClientBoard(game.player);
 					game.boardInitialized = true;
 				}else {
 					game.opponent = new ClientPlayer(name);
 					if(readyPacket.isWhite) {
-						game.opponent.color = PlayerColor.black;
+						game.opponent.color = PlayerColor.BLACK;
 					}else {
-						game.opponent.color = PlayerColor.white;
+						game.opponent.color = PlayerColor.WHITE;
 					}
 				}
 			}
@@ -119,7 +119,7 @@ public class ClientNetworkTransfer {
 						}
 
 						//if the move packet indicates a pawn moved two spaces, set that pawn to enPassantVulnerable
-						if(p.type == PieceType.pawn && (movePacket.packet.intendedMoveY == movePacket.packet.existingPieceY + 2
+						if(p.type == PieceType.PAWN && (movePacket.packet.intendedMoveY == movePacket.packet.existingPieceY + 2
 								|| movePacket.packet.intendedMoveY == movePacket.packet.existingPieceY - 2)) {
 							p.enPassantVulnerable = true;
 						}
@@ -168,20 +168,20 @@ public class ClientNetworkTransfer {
 						p.translateToNewLocation(movePacket.packet.intendedMoveX, movePacket.packet.intendedMoveY, game.opponent, game);
 						//p.xPos = movePacket.packet.intendedMoveX;
 						//p.yPos = movePacket.packet.intendedMoveY;
-						if(game.player.color == PlayerColor.black) {
+						if(game.player.color == PlayerColor.BLACK) {
 							game.moveCount++;
 						}
 
 						//if the move packet indicates a pawn needs to be promoted, locate and promote that pawn.
 						if(movePacket.packet.promotionType != PacketClientMove.PAWN_PROMOTION_FALSE) {
 							if(movePacket.packet.promotionType == PacketClientMove.PAWN_PROMOTION_QUEEN) {
-								p.type = PieceType.queen;
+								p.type = PieceType.QUEEN;
 							}else if(movePacket.packet.promotionType == PacketClientMove.PAWN_PROMOTION_KNIGHT) {
-								p.type = PieceType.knight;
+								p.type = PieceType.KNIGHT;
 							}else if(movePacket.packet.promotionType == PacketClientMove.PAWN_PROMOTION_ROOK) {
-								p.type = PieceType.rook;
+								p.type = PieceType.ROOK;
 							}else if(movePacket.packet.promotionType == PacketClientMove.PAWN_PROMOTION_BISHOP) {
-								p.type = PieceType.bishop;
+								p.type = PieceType.BISHOP;
 							}
 						}
 
@@ -193,10 +193,10 @@ public class ClientNetworkTransfer {
 						if(game.gameEndState == ClientGame.GAME_END_STATE_CHECKMATE || game.gameEndState == ClientGame.GAME_END_STATE_STALEMATE){
 							System.out.println("Sending failure packet...");
 							HvlDirect.writeTCP(NetworkUtil.KEY_CLIENT_GAME_OVER, new PacketClientGameOver(game.gameEndState, game.player.color));
-							if(game.player.color == PlayerColor.black) {
-								game.finalMove = PlayerColor.white;
+							if(game.player.color == PlayerColor.BLACK) {
+								game.finalMove = PlayerColor.WHITE;
 							}else {
-								game.finalMove = PlayerColor.black;
+								game.finalMove = PlayerColor.BLACK;
 							}
 						}else {
 							game.playersTurn = true;
@@ -214,10 +214,10 @@ public class ClientNetworkTransfer {
 				PacketClientGameOver gameOverPacket = HvlDirect.getValue(NetworkUtil.KEY_SERVER_GAME_OVER_RESPONSE);
 				((HvlAgentClientAnarchy)HvlDirect.getAgent()).getTable().remove(NetworkUtil.KEY_SERVER_GAME_OVER_RESPONSE);
 				game.gameEndState = gameOverPacket.gameEndState;
-				if(gameOverPacket.playerColor == PlayerColor.black) {
-					game.finalMove = PlayerColor.white;
+				if(gameOverPacket.playerColor == PlayerColor.BLACK) {
+					game.finalMove = PlayerColor.WHITE;
 				}else {
-					game.finalMove = PlayerColor.black;
+					game.finalMove = PlayerColor.BLACK;
 				}
 			}
 		}

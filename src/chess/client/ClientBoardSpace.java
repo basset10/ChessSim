@@ -22,8 +22,8 @@ public class ClientBoardSpace {
 	public Color color;
 
 	public static enum Color{
-		white,
-		black;
+		WHITE,
+		BLACK;
 	}
 
 	public ClientBoardSpace(int xPosArg, int yPosArg, Color colorArg) {
@@ -33,9 +33,9 @@ public class ClientBoardSpace {
 	}
 	
 	public void draw() {
-		if(this.color == Color.black) {
+		if(this.color == Color.BLACK) {
 			hvlDraw(hvlQuadc(this.getPixelPosition().x, this.getPixelPosition().y, SPACE_SIZE, SPACE_SIZE), hvlColor(0.15f, 0.15f, 0.15f));
-		}else if(this.color == Color.white) {
+		}else if(this.color == Color.WHITE) {
 			hvlDraw(hvlQuadc(this.getPixelPosition().x, this.getPixelPosition().y, SPACE_SIZE, SPACE_SIZE), hvlColor(0.9f, 0.9f, 0.9f));
 		}
 	}

@@ -20,18 +20,17 @@ import chess.common.Util;
 public class ClientPiece {
 
 	public static final int PIECE_SIZE = 50;
-	public static final float TRANSLATION_SPEED = 500f;
-
+	public static final float TRANSLATION_SPEED = 750f;
 	public boolean moved = false;
 	public boolean inMotion = false;
 
 	enum PieceType{
-		pawn(ClientLoader.INDEX_PAWN_BLACK, ClientLoader.INDEX_PAWN_WHITE),
-		knight(ClientLoader.INDEX_KNIGHT_BLACK, ClientLoader.INDEX_KNIGHT_WHITE),
-		rook(ClientLoader.INDEX_ROOK_BLACK, ClientLoader.INDEX_ROOK_WHITE),
-		bishop(ClientLoader.INDEX_BISHOP_BLACK, ClientLoader.INDEX_BISHOP_WHITE),
-		queen(ClientLoader.INDEX_QUEEN_BLACK, ClientLoader.INDEX_QUEEN_WHITE),
-		king(ClientLoader.INDEX_KING_BLACK, ClientLoader.INDEX_KING_WHITE);
+		PAWN(ClientLoader.INDEX_PAWN_BLACK, ClientLoader.INDEX_PAWN_WHITE),
+		KNIGHT(ClientLoader.INDEX_KNIGHT_BLACK, ClientLoader.INDEX_KNIGHT_WHITE),
+		ROOK(ClientLoader.INDEX_ROOK_BLACK, ClientLoader.INDEX_ROOK_WHITE),
+		BISHOP(ClientLoader.INDEX_BISHOP_BLACK, ClientLoader.INDEX_BISHOP_WHITE),
+		QUEEN(ClientLoader.INDEX_QUEEN_BLACK, ClientLoader.INDEX_QUEEN_WHITE),
+		KING(ClientLoader.INDEX_KING_BLACK, ClientLoader.INDEX_KING_WHITE);
 
 		final int blackTexture, whiteTexture;
 
@@ -42,8 +41,8 @@ public class ClientPiece {
 	}
 
 	enum PieceColor{
-		white,
-		black;
+		WHITE,
+		BLACK;
 	}
 
 	public int xPos;
@@ -74,7 +73,7 @@ public class ClientPiece {
 	}
 
 	public HvlCoord getPixelPosition(ClientPlayer p) {
-		if(p.color == PlayerColor.white) {
+		if(p.color == PlayerColor.WHITE) {
 			return new HvlCoord((xPos)*ClientBoardSpace.SPACE_SIZE + Display.getWidth()/2 - ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2),
 					(yPos)*ClientBoardSpace.SPACE_SIZE + Display.getHeight()/2 - ((ClientBoardSpace.SPACE_SIZE * 4) - ClientBoardSpace.SPACE_SIZE/2));
 
@@ -88,7 +87,7 @@ public class ClientPiece {
 
 	public void draw(ClientPlayer p) {
 		if(!inMotion) {
-			if(color == PieceColor.black) {
+			if(color == PieceColor.BLACK) {
 				hvlDraw(hvlQuadc(getPixelPosition(p).x, getPixelPosition(p).y, PIECE_SIZE, PIECE_SIZE), hvlTexture(type.blackTexture));
 			}else {
 				hvlDraw(hvlQuadc(getPixelPosition(p).x, getPixelPosition(p).y, PIECE_SIZE, PIECE_SIZE), hvlTexture(type.whiteTexture));
@@ -128,19 +127,19 @@ public class ClientPiece {
 	public void drawTranslation(ClientPlayer p, float delta, ClientGame g) {
 
 		if(p.color == g.player.color) {
-			if(color == PieceColor.black) {
+			if(color == PieceColor.BLACK) {
 				hvlDraw(hvlQuadc((getPixelPosition(p).x + horizontalTravel), (getPixelPosition(p).y + verticalTravel), PIECE_SIZE, PIECE_SIZE), hvlTexture(type.blackTexture));
 			}else {
 				hvlDraw(hvlQuadc(getPixelPosition(p).x + horizontalTravel, getPixelPosition(p).y + verticalTravel, PIECE_SIZE, PIECE_SIZE), hvlTexture(type.whiteTexture));
 			}
 		}else {
-			if(color == PieceColor.black) {
+			if(color == PieceColor.BLACK) {
 				hvlDraw(hvlQuadc((getPixelPosition(p).x - horizontalTravel), (getPixelPosition(p).y - verticalTravel), PIECE_SIZE, PIECE_SIZE), hvlTexture(type.blackTexture));
 			}else {
 				hvlDraw(hvlQuadc(getPixelPosition(p).x - horizontalTravel, getPixelPosition(p).y - verticalTravel, PIECE_SIZE, PIECE_SIZE), hvlTexture(type.whiteTexture));
 			}
 		}
-		if(!(type == ClientPiece.PieceType.knight)) {
+		if(!(type == ClientPiece.PieceType.KNIGHT)) {
 			if(positiveHorizontalTravel) {
 				if(horizontalTravel > 0) {
 					horizontalTravel -= delta*TRANSLATION_SPEED;

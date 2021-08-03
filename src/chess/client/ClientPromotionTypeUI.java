@@ -33,7 +33,7 @@ public class ClientPromotionTypeUI {
 		hvlDraw(hvlQuadc(Display.getWidth()/2 + 425-55, Display.getHeight()/2+55, 90, 90), Color.white);
 		hvlDraw(hvlQuadc(Display.getWidth()/2 + 425-55, Display.getHeight()/2-55, 90, 90), Color.white);
 		
-		if(player.color == ClientPlayer.PlayerColor.black) {
+		if(player.color == ClientPlayer.PlayerColor.BLACK) {
 			hvlDraw(hvlQuadc(Display.getWidth()/2 + 425+55, Display.getHeight()/2+55, 80, 80), hvlTexture(ClientLoader.INDEX_QUEEN_BLACK));
 			hvlDraw(hvlQuadc(Display.getWidth()/2 + 425+55, Display.getHeight()/2-55, 80, 80), hvlTexture(ClientLoader.INDEX_KNIGHT_BLACK));
 			hvlDraw(hvlQuadc(Display.getWidth()/2 + 425-55, Display.getHeight()/2+55, 80, 80), hvlTexture(ClientLoader.INDEX_ROOK_BLACK));

@@ -13,9 +13,13 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.newdawn.slick.Color;
 
-import chess.client.ClientMenuManager.MenuState;
+import com.osreboot.hvol2.direct.HvlDirect;
+import com.osreboot.hvol2.direct.HvlDirect.HvlAgentStatus;
+
 import chess.client.ClientPiece.PieceType;
 import chess.client.ClientPlayer.PlayerColor;
+import chess.client.menu.ClientMenuManager;
+import chess.client.menu.ClientMenuManager.MenuState;
 import chess.common.Util;
 import chess.common.packet.PacketClientMove;
 
@@ -58,7 +62,7 @@ public class ClientGame {
 		player = new ClientPlayer(id);
 
 		if(debug) {
-			player.color = PlayerColor.black;
+			player.color = PlayerColor.BLACK;
 			board = new ClientBoard(player);
 			boardInitialized = true;
 		}
@@ -116,6 +120,12 @@ public class ClientGame {
 					reset();
 				}
 			}else {
+				
+				if(HvlDirect.getStatus() == HvlAgentStatus.DISCONNECTED) {
+					ClientNetworkManager.disconnect();
+					reset();
+				}
+				
 				if(otherPlayers.size() < 1) {
 					reset();
 					//Send the player to a menu telling them they lost connection
@@ -192,9 +202,9 @@ public class ClientGame {
 
 
 
-												if(player.color == PlayerColor.black) {												
+												if(player.color == PlayerColor.BLACK) {												
 													//If the move is a promotion, upgrade the pawn.
-													if(p.yPos == 7 && p.type==PieceType.pawn) {
+													if(p.yPos == 7 && p.type==PieceType.PAWN) {
 														promotionUI = true;
 														validMoves.clear();
 														escape = true;
@@ -220,7 +230,7 @@ public class ClientGame {
 														}
 													}
 												}else {
-													if(p.yPos == 0 && p.type==PieceType.pawn) {
+													if(p.yPos == 0 && p.type==PieceType.PAWN) {
 														promotionUI = true;
 														validMoves.clear();
 														escape = true;
@@ -249,7 +259,7 @@ public class ClientGame {
 												validMoves.clear();
 												escape = true;
 												if(!promotionUI) playersTurn = false;
-												if(player.color == PlayerColor.white)
+												if(player.color == PlayerColor.WHITE)
 													moveCount++;
 											}					
 											if(escape) {
@@ -278,7 +288,7 @@ public class ClientGame {
 										&& Util.leftMouseClick()) {
 									ClientNetworkTransfer.writeClientMovePacket(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id,
 											false, false, PacketClientMove.PAWN_PROMOTION_QUEEN);
-									board.getPieceAt(promotionX, promotionY).type = PieceType.queen;
+									board.getPieceAt(promotionX, promotionY).type = PieceType.QUEEN;
 									promotionUI = false;
 									playersTurn = false;
 								}
@@ -287,7 +297,7 @@ public class ClientGame {
 										&& Util.leftMouseClick()) {
 									ClientNetworkTransfer.writeClientMovePacket(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id,
 											false, false, PacketClientMove.PAWN_PROMOTION_KNIGHT);
-									board.getPieceAt(promotionX, promotionY).type = PieceType.knight;
+									board.getPieceAt(promotionX, promotionY).type = PieceType.KNIGHT;
 									promotionUI = false;
 									playersTurn = false;
 								}
@@ -296,7 +306,7 @@ public class ClientGame {
 										&& Util.leftMouseClick()) {
 									ClientNetworkTransfer.writeClientMovePacket(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id,
 											false, false, PacketClientMove.PAWN_PROMOTION_ROOK);
-									board.getPieceAt(promotionX, promotionY).type = PieceType.rook;
+									board.getPieceAt(promotionX, promotionY).type = PieceType.ROOK;
 									promotionUI = false;
 									playersTurn = false;
 								}
@@ -305,7 +315,7 @@ public class ClientGame {
 										&& Util.leftMouseClick()) {
 									ClientNetworkTransfer.writeClientMovePacket(selectedPiecexPos, selectedPieceyPos, promotionX, promotionY, id,
 											false, false, PacketClientMove.PAWN_PROMOTION_BISHOP);
-									board.getPieceAt(promotionX, promotionY).type = PieceType.bishop;
+									board.getPieceAt(promotionX, promotionY).type = PieceType.BISHOP;
 									promotionUI = false;
 									playersTurn = false;
 								}
@@ -315,7 +325,7 @@ public class ClientGame {
 						}
 					}else {
 						if(gameEndState == GAME_END_STATE_CHECKMATE) {
-							hvlFont(0).drawc("GG! Checkmate by " + finalMove.toString() + " in " + moveCount + " moves.", Display.getWidth()/2, Display.getHeight()-20, 1.2f);					
+							hvlFont(0).drawc("GG! Checkmate by " + finalMove.toString().toLowerCase() + " in " + moveCount + " moves.", Display.getWidth()/2, Display.getHeight()-20, 1.2f);					
 						}else {
 							hvlFont(0).drawc("Stalemate in " + moveCount + " moves.", Display.getWidth()/2, Display.getHeight()-20, 1.2f);
 						}

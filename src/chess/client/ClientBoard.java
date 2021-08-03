@@ -23,9 +23,9 @@ public class ClientBoard {
 			board.add(new ArrayList<ClientBoardSpace>());			
 			for(int j = 0; j < 8; j++) {
 				if(blackFlag) {
-					board.get(i).add(new ClientBoardSpace(j, i, Color.white));
+					board.get(i).add(new ClientBoardSpace(j, i, Color.WHITE));
 				}else {
-					board.get(i).add(new ClientBoardSpace(j, i, Color.black));
+					board.get(i).add(new ClientBoardSpace(j, i, Color.BLACK));
 				}
 				if(j != 7) blackFlag = !blackFlag;
 			}
@@ -49,9 +49,9 @@ public class ClientBoard {
 			board.add(new ArrayList<ClientBoardSpace>());			
 			for(int j = 0; j < 8; j++) {
 				if(blackFlag) {
-					board.get(i).add(new ClientBoardSpace(j, i, Color.white));
+					board.get(i).add(new ClientBoardSpace(j, i, Color.WHITE));
 				}else {
-					board.get(i).add(new ClientBoardSpace(j, i, Color.black));
+					board.get(i).add(new ClientBoardSpace(j, i, Color.BLACK));
 				}
 				if(j != 7) blackFlag = !blackFlag;
 			}
@@ -61,41 +61,41 @@ public class ClientBoard {
 
 	//populate the game board with starting pieces
 	private void assembleBoard() {
-		activePieces.add(new ClientPiece(PieceType.rook, PieceColor.black, 0, 0));
-		activePieces.add(new ClientPiece(PieceType.knight, PieceColor.black, 1, 0));
-		activePieces.add(new ClientPiece(PieceType.bishop, PieceColor.black, 2, 0));
-		activePieces.add(new ClientPiece(PieceType.queen, PieceColor.black, 3, 0));
-		activePieces.add(new ClientPiece(PieceType.king, PieceColor.black, 4, 0));
-		activePieces.add(new ClientPiece(PieceType.bishop, PieceColor.black, 5, 0));
-		activePieces.add(new ClientPiece(PieceType.knight, PieceColor.black, 6, 0));
-		activePieces.add(new ClientPiece(PieceType.rook, PieceColor.black, 7, 0));
+		activePieces.add(new ClientPiece(PieceType.ROOK, PieceColor.BLACK, 0, 0));
+		activePieces.add(new ClientPiece(PieceType.KNIGHT, PieceColor.BLACK, 1, 0));
+		activePieces.add(new ClientPiece(PieceType.BISHOP, PieceColor.BLACK, 2, 0));
+		activePieces.add(new ClientPiece(PieceType.QUEEN, PieceColor.BLACK, 3, 0));
+		activePieces.add(new ClientPiece(PieceType.KING, PieceColor.BLACK, 4, 0));
+		activePieces.add(new ClientPiece(PieceType.BISHOP, PieceColor.BLACK, 5, 0));
+		activePieces.add(new ClientPiece(PieceType.KNIGHT, PieceColor.BLACK, 6, 0));
+		activePieces.add(new ClientPiece(PieceType.ROOK, PieceColor.BLACK, 7, 0));
 
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.black, 0, 1));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.black, 1, 1));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.black, 2, 1));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.black, 3, 1));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.black, 4, 1));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.black, 5, 1));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.black, 6, 1));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.black, 7, 1));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.BLACK, 0, 1));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.BLACK, 1, 1));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.BLACK, 2, 1));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.BLACK, 3, 1));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.BLACK, 4, 1));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.BLACK, 5, 1));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.BLACK, 6, 1));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.BLACK, 7, 1));
 
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.white, 0, 6));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.white, 1, 6));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.white, 2, 6));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.white, 3, 6));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.white, 4, 6));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.white, 5, 6));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.white, 6, 6));
-		activePieces.add(new ClientPiece(PieceType.pawn, PieceColor.white, 7, 6));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.WHITE, 0, 6));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.WHITE, 1, 6));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.WHITE, 2, 6));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.WHITE, 3, 6));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.WHITE, 4, 6));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.WHITE, 5, 6));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.WHITE, 6, 6));
+		activePieces.add(new ClientPiece(PieceType.PAWN, PieceColor.WHITE, 7, 6));
 
-		activePieces.add(new ClientPiece(PieceType.rook, PieceColor.white, 0, 7));
-		activePieces.add(new ClientPiece(PieceType.knight, PieceColor.white, 1, 7));
-		activePieces.add(new ClientPiece(PieceType.bishop, PieceColor.white, 2, 7));
-		activePieces.add(new ClientPiece(PieceType.queen, PieceColor.white, 3, 7));
-		activePieces.add(new ClientPiece(PieceType.king, PieceColor.white, 4, 7));
-		activePieces.add(new ClientPiece(PieceType.bishop, PieceColor.white, 5, 7));
-		activePieces.add(new ClientPiece(PieceType.knight, PieceColor.white, 6, 7));
-		activePieces.add(new ClientPiece(PieceType.rook, PieceColor.white, 7, 7));
+		activePieces.add(new ClientPiece(PieceType.ROOK, PieceColor.WHITE, 0, 7));
+		activePieces.add(new ClientPiece(PieceType.KNIGHT, PieceColor.WHITE, 1, 7));
+		activePieces.add(new ClientPiece(PieceType.BISHOP, PieceColor.WHITE, 2, 7));
+		activePieces.add(new ClientPiece(PieceType.QUEEN, PieceColor.WHITE, 3, 7));
+		activePieces.add(new ClientPiece(PieceType.KING, PieceColor.WHITE, 4, 7));
+		activePieces.add(new ClientPiece(PieceType.BISHOP, PieceColor.WHITE, 5, 7));
+		activePieces.add(new ClientPiece(PieceType.KNIGHT, PieceColor.WHITE, 6, 7));
+		activePieces.add(new ClientPiece(PieceType.ROOK, PieceColor.WHITE, 7, 7));
 	}
 
 	/**
